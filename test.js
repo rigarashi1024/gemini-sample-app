@@ -10,8 +10,34 @@ const testWithParameter = (name) => {
   return `Test successful for ${name}`;
 };
 
-// Export both functions
+// Test case: Addition function
+const testAddition = (a, b) => {
+  const result = a + b;
+  console.log(`${a} + ${b} = ${result}`);
+  return result;
+};
+
+// Test case: Array operations
+const testArrayOperations = (arr) => {
+  const doubled = arr.map(x => x * 2);
+  const sum = arr.reduce((acc, val) => acc + val, 0);
+  console.log(`Original: [${arr}], Doubled: [${doubled}], Sum: ${sum}`);
+  return { doubled, sum };
+};
+
+// Test case: Object manipulation
+const testObjectManipulation = (obj) => {
+  const keys = Object.keys(obj);
+  const values = Object.values(obj);
+  console.log(`Keys: [${keys}], Values: [${values}]`);
+  return { keys, values, count: keys.length };
+};
+
+// Export all test functions
 module.exports = {
   testFunction,
-  testWithParameter
+  testWithParameter,
+  testAddition,
+  testArrayOperations,
+  testObjectManipulation
 };
