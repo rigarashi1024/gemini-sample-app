@@ -1,0 +1,15 @@
+{
+    "servers": {
+        "github-mcp": {
+            "type": "remote",
+            "url": "https://github-mcp.example.com", 
+            "description": "GitHub公式MCP。PR関連の操作にだけ使用する。"
+        },
+        "local-git-readonly": {
+            "type": "local",
+            "command": "node",
+            "args": ["mcp/servers/local-git-readonly/server.js"],
+            "description": "ローカルリポジトリの git status / git diff を提供する自前MCP。"
+        }
+    }
+}
