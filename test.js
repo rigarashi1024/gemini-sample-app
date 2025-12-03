@@ -4,4 +4,14 @@ const testFunction = () => {
   return 'Test successful';
 };
 
-module.exports = testFunction;
+// Additional test function for demonstration
+const testWithParameter = (name) => {
+  console.log(`Hello, ${name}! This is a parameterized test.`);
+  return `Test successful for ${name}`;
+};
+
+// Export both functions
+module.exports = {
+  testFunction,
+  testWithParameter
+};
