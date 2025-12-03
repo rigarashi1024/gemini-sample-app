@@ -1,0 +1,2 @@
+- 初回github-mcp追加時には`node ./scripts/setup-mcp.js`を使用する（.envの環境変数を埋め込んだ設定ファイルを指定して起動したいから）
+- 環境変数埋め込みように`npm install dotenv` でdotenvを使用できるようにしておく必要あり
