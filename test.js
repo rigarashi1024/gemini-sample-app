@@ -243,6 +243,110 @@ const testDestructuringAndSpread = () => {
   return { first, second, rest, name, others, newArr, newObj };
 };
 
+// Test case: Closures and scope
+const testClosures = () => {
+  const createCounter = () => {
+    let count = 0;
+    return {
+      increment: () => ++count,
+      decrement: () => --count,
+      getCount: () => count
+    };
+  };
+
+  const counter = createCounter();
+  counter.increment();
+  counter.increment();
+  const value1 = counter.getCount();
+  counter.decrement();
+  const value2 = counter.getCount();
+
+  console.log(`Counter after 2 increments: ${value1}, after 1 decrement: ${value2}`);
+  return { value1, value2 };
+};
+
+// Test case: Currying
+const testCurrying = () => {
+  const multiply = (a) => (b) => (c) => a * b * c;
+  const add = (a) => (b) => a + b;
+
+  const result1 = multiply(2)(3)(4);
+  const multiplyBy2 = multiply(2);
+  const result2 = multiplyBy2(5)(6);
+  const add10 = add(10);
+  const result3 = add10(5);
+
+  console.log(`multiply(2)(3)(4): ${result1}, multiplyBy2(5)(6): ${result2}, add10(5): ${result3}`);
+  return { result1, result2, result3 };
+};
+
+// Test case: Higher-order functions
+const testHigherOrderFunctions = () => {
+  const numbers = [1, 2, 3, 4, 5];
+
+  const withTiming = (fn, label) => {
+    return (...args) => {
+      const start = Date.now();
+      const result = fn(...args);
+      const elapsed = Date.now() - start;
+      console.log(`${label} took ${elapsed}ms`);
+      return result;
+    };
+  };
+
+  const sum = (arr) => arr.reduce((acc, val) => acc + val, 0);
+  const timedSum = withTiming(sum, 'Sum operation');
+  const result = timedSum(numbers);
+
+  console.log(`Sum result: ${result}`);
+  return { result };
+};
+
+// Test case: Template literals and tagged templates
+const testTemplateStrings = () => {
+  const name = 'Alice';
+  const age = 30;
+  const greeting = `Hello, my name is ${name} and I am ${age} years old.`;
+
+  const multiline = `
+    This is a multiline
+    string using template
+    literals in JavaScript.
+  `.trim();
+
+  const highlight = (strings, ...values) => {
+    return strings.reduce((acc, str, i) => {
+      return acc + str + (values[i] ? `**${values[i]}**` : '');
+    }, '');
+  };
+
+  const tagged = highlight`Name: ${name}, Age: ${age}`;
+
+  console.log(`Greeting: ${greeting}`);
+  console.log(`Multiline: ${multiline}`);
+  console.log(`Tagged: ${tagged}`);
+
+  return { greeting, multiline, tagged };
+};
+
+// Test case: Symbol and WeakMap
+const testSymbolAndWeakMap = () => {
+  const id = Symbol('id');
+  const user = { name: 'Alice', [id]: 12345 };
+
+  const weakMap = new WeakMap();
+  const key = { name: 'key' };
+  weakMap.set(key, 'value');
+  const hasKey = weakMap.has(key);
+  const value = weakMap.get(key);
+
+  console.log(`User object keys:`, Object.keys(user));
+  console.log(`Symbol value: ${user[id]}`);
+  console.log(`WeakMap has key: ${hasKey}, value: ${value}`);
+
+  return { symbolValue: user[id], hasKey, value };
+};
+
 // Main test runner
 const runAllTests = async () => {
   console.log('=== Running All Tests ===\n');
@@ -269,6 +373,11 @@ const runAllTests = async () => {
   testAdvancedArrayMethods([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
   testClassOperations();
   testDestructuringAndSpread();
+  testClosures();
+  testCurrying();
+  testHigherOrderFunctions();
+  testTemplateStrings();
+  testSymbolAndWeakMap();
 
   console.log('\n=== All Tests Completed ===');
 };
@@ -295,6 +404,11 @@ module.exports = {
   testAdvancedArrayMethods,
   testClassOperations,
   testDestructuringAndSpread,
+  testClosures,
+  testCurrying,
+  testHigherOrderFunctions,
+  testTemplateStrings,
+  testSymbolAndWeakMap,
   Person,
   Developer,
   runAllTests
