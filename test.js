@@ -65,6 +65,41 @@ const testErrorHandling = (shouldThrow = false) => {
   }
 };
 
+// Test case: Math operations
+const testMathOperations = (x, y) => {
+  const operations = {
+    add: x + y,
+    subtract: x - y,
+    multiply: x * y,
+    divide: y !== 0 ? x / y : 'Cannot divide by zero',
+    power: Math.pow(x, y),
+    modulo: x % y
+  };
+  console.log(`Math operations for ${x} and ${y}:`, operations);
+  return operations;
+};
+
+// Test case: Array filtering and sorting
+const testArrayFiltering = (arr) => {
+  const evenNumbers = arr.filter(x => x % 2 === 0);
+  const oddNumbers = arr.filter(x => x % 2 !== 0);
+  const sorted = [...arr].sort((a, b) => a - b);
+  const reversed = [...arr].sort((a, b) => b - a);
+  console.log(`Even: [${evenNumbers}], Odd: [${oddNumbers}], Sorted: [${sorted}], Reversed: [${reversed}]`);
+  return { evenNumbers, oddNumbers, sorted, reversed };
+};
+
+// Test case: Date and time operations
+const testDateOperations = () => {
+  const now = new Date();
+  const formatted = now.toISOString();
+  const timestamp = now.getTime();
+  const dateString = now.toLocaleDateString();
+  const timeString = now.toLocaleTimeString();
+  console.log(`Current date: ${dateString}, Time: ${timeString}, ISO: ${formatted}, Timestamp: ${timestamp}`);
+  return { formatted, timestamp, dateString, timeString };
+};
+
 // Main test runner
 const runAllTests = async () => {
   console.log('=== Running All Tests ===\n');
@@ -78,6 +113,9 @@ const runAllTests = async () => {
   testErrorHandling(false);
   testErrorHandling(true);
   await testAsyncOperation(500);
+  testMathOperations(10, 3);
+  testArrayFiltering([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  testDateOperations();
 
   console.log('\n=== All Tests Completed ===');
 };
@@ -92,6 +130,9 @@ module.exports = {
   testStringOperations,
   testAsyncOperation,
   testErrorHandling,
+  testMathOperations,
+  testArrayFiltering,
+  testDateOperations,
   runAllTests
 };
 
