@@ -114,10 +114,9 @@ const testJSONOperations = (obj) => {
 const testRegexOperations = (text, pattern) => {
   const regex = new RegExp(pattern, 'gi');
   const matches = text.match(regex);
-  const hasMatch = regex.test(text);
-  const replaced = text.replace(regex, '***');
+  const replaced = text.replace(new RegExp(pattern, 'gi'), '***');
   console.log(`Text: "${text}", Pattern: "${pattern}", Matches: [${matches}], Replaced: "${replaced}"`);
-  return { matches, hasMatch, replaced };
+  return { matches, hasMatch: matches !== null, replaced };
 };
 
 // Test case: Promise handling
