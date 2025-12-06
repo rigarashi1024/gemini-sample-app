@@ -142,6 +142,107 @@ const testTypeChecking = (value) => {
   return { type, isArray, isNull, isUndefined, constructor };
 };
 
+// Test case: Set operations
+const testSetOperations = () => {
+  const set1 = new Set([1, 2, 3, 4, 5]);
+  const set2 = new Set([4, 5, 6, 7, 8]);
+
+  const union = new Set([...set1, ...set2]);
+  const intersection = new Set([...set1].filter(x => set2.has(x)));
+  const difference = new Set([...set1].filter(x => !set2.has(x)));
+
+  console.log(`Set1: [${[...set1]}], Set2: [${[...set2]}]`);
+  console.log(`Union: [${[...union]}], Intersection: [${[...intersection]}], Difference: [${[...difference]}]`);
+  return { union: [...union], intersection: [...intersection], difference: [...difference] };
+};
+
+// Test case: Map operations
+const testMapOperations = () => {
+  const map = new Map();
+  map.set('name', 'Alice');
+  map.set('age', 25);
+  map.set('city', 'Tokyo');
+
+  const keys = [...map.keys()];
+  const values = [...map.values()];
+  const entries = [...map.entries()];
+  const hasName = map.has('name');
+  const size = map.size;
+
+  console.log(`Map keys: [${keys}], values: [${values}], size: ${size}, has 'name': ${hasName}`);
+  return { keys, values, entries, hasName, size };
+};
+
+// Test case: Advanced array methods
+const testAdvancedArrayMethods = (arr) => {
+  const hasEven = arr.some(x => x % 2 === 0);
+  const allPositive = arr.every(x => x > 0);
+  const firstEven = arr.find(x => x % 2 === 0);
+  const firstEvenIndex = arr.findIndex(x => x % 2 === 0);
+  const includesFive = arr.includes(5);
+  const flattened = [arr, [10, 11]].flat();
+
+  console.log(`Has even: ${hasEven}, All positive: ${allPositive}, First even: ${firstEven}, Index: ${firstEvenIndex}`);
+  console.log(`Includes 5: ${includesFive}, Flattened: [${flattened}]`);
+  return { hasEven, allPositive, firstEven, firstEvenIndex, includesFive, flattened };
+};
+
+// Test case: Class and inheritance
+class Person {
+  constructor(name, age) {
+    this.name = name;
+    this.age = age;
+  }
+
+  greet() {
+    return `Hello, I'm ${this.name} and I'm ${this.age} years old.`;
+  }
+}
+
+class Developer extends Person {
+  constructor(name, age, language) {
+    super(name, age);
+    this.language = language;
+  }
+
+  code() {
+    return `${this.name} is coding in ${this.language}`;
+  }
+}
+
+const testClassOperations = () => {
+  const person = new Person('Alice', 30);
+  const developer = new Developer('Bob', 25, 'JavaScript');
+
+  console.log(person.greet());
+  console.log(developer.greet());
+  console.log(developer.code());
+
+  return {
+    personGreeting: person.greet(),
+    developerGreeting: developer.greet(),
+    developerCoding: developer.code()
+  };
+};
+
+// Test case: Destructuring and spread
+const testDestructuringAndSpread = () => {
+  const arr = [1, 2, 3, 4, 5];
+  const [first, second, ...rest] = arr;
+  const newArr = [...arr, 6, 7, 8];
+
+  const obj = { name: 'Alice', age: 30, city: 'Tokyo' };
+  const { name, ...others } = obj;
+  const newObj = { ...obj, country: 'Japan' };
+
+  console.log(`First: ${first}, Second: ${second}, Rest: [${rest}]`);
+  console.log(`Name: ${name}, Others:`, others);
+  console.log(`New array: [${newArr}]`);
+  console.log(`New object:`, newObj);
+
+  return { first, second, rest, name, others, newArr, newObj };
+};
+
 // Main test runner
 const runAllTests = async () => {
   console.log('=== Running All Tests ===\n');
@@ -163,6 +264,11 @@ const runAllTests = async () => {
   await testPromiseOperations();
   testTypeChecking([1, 2, 3]);
   testTypeChecking({ key: 'value' });
+  testSetOperations();
+  testMapOperations();
+  testAdvancedArrayMethods([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  testClassOperations();
+  testDestructuringAndSpread();
 
   console.log('\n=== All Tests Completed ===');
 };
@@ -184,6 +290,13 @@ module.exports = {
   testRegexOperations,
   testPromiseOperations,
   testTypeChecking,
+  testSetOperations,
+  testMapOperations,
+  testAdvancedArrayMethods,
+  testClassOperations,
+  testDestructuringAndSpread,
+  Person,
+  Developer,
   runAllTests
 };
 
