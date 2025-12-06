@@ -100,6 +100,48 @@ const testDateOperations = () => {
   return { formatted, timestamp, dateString, timeString };
 };
 
+// Test case: JSON operations
+const testJSONOperations = (obj) => {
+  const jsonString = JSON.stringify(obj, null, 2);
+  const parsed = JSON.parse(jsonString);
+  const isEqual = JSON.stringify(obj) === JSON.stringify(parsed);
+  console.log(`JSON String:\n${jsonString}`);
+  console.log(`Parse successful: ${isEqual}`);
+  return { jsonString, parsed, isEqual };
+};
+
+// Test case: Regular expressions
+const testRegexOperations = (text, pattern) => {
+  const regex = new RegExp(pattern, 'gi');
+  const matches = text.match(regex);
+  const hasMatch = regex.test(text);
+  const replaced = text.replace(regex, '***');
+  console.log(`Text: "${text}", Pattern: "${pattern}", Matches: [${matches}], Replaced: "${replaced}"`);
+  return { matches, hasMatch, replaced };
+};
+
+// Test case: Promise handling
+const testPromiseOperations = async () => {
+  const promise1 = Promise.resolve('Promise 1 resolved');
+  const promise2 = new Promise(resolve => setTimeout(() => resolve('Promise 2 resolved'), 100));
+  const promise3 = Promise.resolve('Promise 3 resolved');
+
+  const results = await Promise.all([promise1, promise2, promise3]);
+  console.log('All promises resolved:', results);
+  return results;
+};
+
+// Test case: Type checking
+const testTypeChecking = (value) => {
+  const type = typeof value;
+  const isArray = Array.isArray(value);
+  const isNull = value === null;
+  const isUndefined = value === undefined;
+  const constructor = value?.constructor?.name || 'N/A';
+  console.log(`Value: ${value}, Type: ${type}, IsArray: ${isArray}, Constructor: ${constructor}`);
+  return { type, isArray, isNull, isUndefined, constructor };
+};
+
 // Main test runner
 const runAllTests = async () => {
   console.log('=== Running All Tests ===\n');
@@ -116,6 +158,11 @@ const runAllTests = async () => {
   testMathOperations(10, 3);
   testArrayFiltering([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
   testDateOperations();
+  testJSONOperations({ id: 1, name: 'Test', active: true });
+  testRegexOperations('Hello World 123', '\\d+');
+  await testPromiseOperations();
+  testTypeChecking([1, 2, 3]);
+  testTypeChecking({ key: 'value' });
 
   console.log('\n=== All Tests Completed ===');
 };
@@ -133,6 +180,10 @@ module.exports = {
   testMathOperations,
   testArrayFiltering,
   testDateOperations,
+  testJSONOperations,
+  testRegexOperations,
+  testPromiseOperations,
+  testTypeChecking,
   runAllTests
 };
 
