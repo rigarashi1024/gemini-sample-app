@@ -11,10 +11,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # ★ 履歴を全部取る
 
       - name: Get PR diff
         run: |
-          git fetch origin ${{ github.base_ref }} --depth=1
+          git fetch origin ${{ github.base_ref }} --depth=0  # or depth指定なしでもOK
           git diff origin/${{ github.base_ref }}...${{ github.sha }} > pr.diff
 
       - name: Install Node.js
