@@ -67,9 +67,11 @@ async function main() {
     const result = await model.generateContent(prompt);
     reviewText = result.response.text();
   } catch (err) {
-    // クォータエラーだけ握りつぶす
-    if (err instanceof GoogleGenerativeAIFetchError && err.status === 429) {
-      console.error("Gemini quota exceeded. Skipping AI review for this run.");
+    // 一時的なエラー（429/503）はスキップ扱い
+    if (err instanceof GoogleGenerativeAIFetchError && (err.status === 429 || err.status === 503)) {
+      console.error(
+        `Gemini temporary error (${err.status}). Skipping AI review for this run.`
+      );
       process.exit(0); // CI としては成功扱い
     }
 
