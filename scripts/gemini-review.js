@@ -1,60 +1,53 @@
 import fs from "fs";
 import axios from "axios";
-import { GoogleGenerativeAI } from "@google/generative-ai"; // ★修正
+import { GoogleGenerativeAI, GoogleGenerativeAIFetchError } from "@google/generative-ai";
 
-// --- Read diff ---
 const diff = fs.readFileSync("pr.diff", "utf8");
 
-// --- Gemini client ---
 const apiKey = process.env.GEMINI_API_KEY;
 if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is not set");
+    console.error("GEMINI_API_KEY is not set");
+    process.exit(0); // ここは失敗じゃなく成功終了にしておく手も
 }
 
 const genAI = new GoogleGenerativeAI(apiKey);
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }); // ← モデル名はお好みで
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
-// --- Prompt for Gemini ---
-const prompt = `
-You are a code reviewer. Review the following Pull Request diff.
+const prompt = `...さっきの diff 用プロンプト...`;
 
-Return output *strictly* in this format:
+async function main() {
+    console.log("Calling Gemini...");
 
-Issue-1:
-    type: bug | performance | style | security | logic | other
-    file: (path or unknown)
-    lines: (line or range)
-    problem: (short explanation)
-    reason: (why it's a problem)
-    suggestion: (fix proposal)
-
-Issue-2:
-    ...
-
-If no issues, write:
-"No major issues. LGTM."
-
-===== DIFF START =====
-${diff}
-===== DIFF END =====
-`;
-
-// --- Call Gemini ---
-console.log("Calling Gemini...");
-const result = await model.generateContent(prompt);
-const reviewText = result.response.text();
-
-// --- Post review comment to GitHub ---
-console.log("Posting review to GitHub...");
-await axios.post(
-    `https://api.github.com/repos/${process.env.REPO_FULL_NAME}/issues/${process.env.PR_NUMBER}/comments`,
-    { body: `### 🤖 Gemini PR Review\n\n${reviewText}` },
-    {
-        headers: {
-            Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-            "Content-Type": "application/json",
-        },
+    let reviewText;
+    try {
+        const result = await model.generateContent(prompt);
+        reviewText = result.response.text();
+    } catch (err) {
+        // クォータエラーだけ握りつぶす
+        if (err instanceof GoogleGenerativeAIFetchError && err.status === 429) {
+            console.error("Gemini quota exceeded. Skipping AI review for this run.");
+            // ここで PR コメントに「クォータ超過でレビュースキップしました」と書いても良いし、
+            // 何もせず終了でもOK
+            process.exit(0); // CI としては成功扱いにする
+        }
+        // その他は普通にエラーとして落とす
+        console.error(err);
+        process.exit(1);
     }
-);
 
-console.log("Gemini review posted successfully!");
+    console.log("Posting review to GitHub...");
+    await axios.post(
+        `https://api.github.com/repos/${process.env.REPO_FULL_NAME}/issues/${process.env.PR_NUMBER}/comments`,
+        { body: `### 🤖 Gemini PR Review\n\n${reviewText}` },
+        {
+            headers: {
+                Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+                "Content-Type": "application/json",
+            },
+        }
+    );
+
+    console.log("Gemini review posted successfully!");
+}
+
+main();
