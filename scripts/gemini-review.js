@@ -59,7 +59,7 @@ ${diff}
 ===== DIFF END =====
 `;
 
-async function main() {
+(async () => {
   console.log("Calling Gemini...");
 
   let reviewText;
@@ -67,15 +67,23 @@ async function main() {
     const result = await model.generateContent(prompt);
     reviewText = result.response.text();
   } catch (err) {
-    // 一時的なエラー（429/503）はスキップ扱い
-    if (err instanceof GoogleGenerativeAIFetchError && (err.status === 429 || err.status === 503)) {
-      console.error(
-        `Gemini temporary error (${err.status}). Skipping AI review for this run.`
-      );
-      process.exit(0); // CI としては成功扱い
+    // Handle GoogleGenerativeAIFetchError specifically
+    if (err instanceof GoogleGenerativeAIFetchError) {
+      // Transient errors: retry later or skip
+      if (err.status === 429 || err.status === 503) {
+        console.error(
+          `Gemini temporary error (${err.status}). Skipping AI review for this run.`
+        );
+        process.exit(0); // CI success - transient issue
+      }
+
+      // Other API errors (auth, invalid request, etc.)
+      console.error(`Gemini API error (${err.status}):`, err.message);
+      process.exit(1);
     }
 
-    console.error("Gemini API error:", err);
+    // Network or other unknown errors
+    console.error("Unexpected error calling Gemini:", err);
     process.exit(1);
   }
 
@@ -89,7 +97,7 @@ async function main() {
         headers: {
           Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
           "Content-Type": "application/json",
-          Accept: "application/vnd.github+json",
+          Accept: "application/vnd.github.v3+json",
         },
       }
     );
@@ -98,10 +106,8 @@ async function main() {
     if (err.response) {
       console.error("GitHub API error:", err.response.status, err.response.data);
     } else {
-      console.error(err);
+      console.error("Network error posting to GitHub:", err.message);
     }
     process.exit(1);
   }
-}
-
-main();
+})();
