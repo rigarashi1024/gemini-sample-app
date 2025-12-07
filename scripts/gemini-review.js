@@ -12,7 +12,7 @@ if (!apiKey) {
 }
 
 const genAI = new GoogleGenerativeAI(apiKey);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" }); // ← モデル名はお好みで
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }); // ← モデル名はお好みで
 
 // --- Prompt for Gemini ---
 const prompt = `
