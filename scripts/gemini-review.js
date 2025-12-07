@@ -10,7 +10,35 @@ if (!apiKey) {
 const genAI = new GoogleGenerativeAI(apiKey);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
-const prompt = `...さっきの diff 用プロンプト...`;
+const prompt = `
+You are a code reviewer bot running in GitHub Actions.
+
+Task:
+- You will be given a unified git diff.
+- Review ONLY the changes in the diff.
+- Find bugs, security issues, performance issues, style issues, and logic problems.
+
+Return output *strictly* in this format (no extra text, no questions, no greetings):
+
+Issue-1:
+    type: bug | performance | style | security | logic | other
+    file: (path or unknown)
+    lines: (line or range)
+    problem: (short explanation)
+    reason: (why it's a problem)
+    suggestion: (fix proposal)
+
+Issue-2:
+    ...
+
+If there are no significant issues, return exactly:
+"No major issues. LGTM."
+
+===== DIFF START =====
+${diff}
+===== DIFF END =====
+`;
+
 
 async function main() {
     console.log("Calling Gemini...");
