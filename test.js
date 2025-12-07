@@ -1,37 +1,3 @@
-// Test case: Array operations
-const testArrayOperations = (arr) => {
-  const doubled = arr.map(x => x * 2);
-  const sum = arr.reduce((acc, val) => acc + val, 0);
-  console.log(`Original: [${arr}], Doubled: [${doubled}], Sum: ${sum}`);
-  return { doubled, sum };
-};
-
-// Test case: Object manipulation
-const testObjectManipulation = (obj) => {
-  const keys = Object.keys(obj);
-  const values = Object.values(obj);
-  console.log(`Keys: [${keys}], Values: [${values}]`);
-  return { keys, values, count: keys.length };
-};
-
-// Test case: String operations
-const testStringOperations = (str) => {
-  const uppercase = str.toUpperCase();
-  const lowercase = str.toLowerCase();
-  const reversed = str.split('').reverse().join('');
-  const length = str.length;
-  console.log(`Original: "${str}", Upper: "${uppercase}", Lower: "${lowercase}", Reversed: "${reversed}", Length: ${length}`);
-  return { uppercase, lowercase, reversed, length };
-};
-
-// Test case: Async operation simulation
-const testAsyncOperation = async (delay = 1000) => {
-  console.log(`Starting async operation with ${delay}ms delay...`);
-  await new Promise(resolve => setTimeout(resolve, delay));
-  console.log('Async operation completed!');
-  return `Completed after ${delay}ms`;
-};
-
 // Test case: Error handling
 const testErrorHandling = (shouldThrow = false) => {
   try {
@@ -68,58 +34,6 @@ const testArrayFiltering = (arr) => {
   const reversed = [...arr].sort((a, b) => b - a);
   console.log(`Even: [${evenNumbers}], Odd: [${oddNumbers}], Sorted: [${sorted}], Reversed: [${reversed}]`);
   return { evenNumbers, oddNumbers, sorted, reversed };
-};
-
-// Test case: Date and time operations
-const testDateOperations = () => {
-  const now = new Date();
-  const formatted = now.toISOString();
-  const timestamp = now.getTime();
-  const dateString = now.toLocaleDateString();
-  const timeString = now.toLocaleTimeString();
-  console.log(`Current date: ${dateString}, Time: ${timeString}, ISO: ${formatted}, Timestamp: ${timestamp}`);
-  return { formatted, timestamp, dateString, timeString };
-};
-
-// Test case: JSON operations
-const testJSONOperations = (obj) => {
-  const jsonString = JSON.stringify(obj, null, 2);
-  const parsed = JSON.parse(jsonString);
-  const isEqual = JSON.stringify(obj) === JSON.stringify(parsed);
-  console.log(`JSON String:\n${jsonString}`);
-  console.log(`Parse successful: ${isEqual}`);
-  return { jsonString, parsed, isEqual };
-};
-
-// Test case: Regular expressions
-const testRegexOperations = (text, pattern) => {
-  const regex = new RegExp(pattern, 'gi');
-  const matches = text.match(regex);
-  const replaced = text.replace(new RegExp(pattern, 'gi'), '***');
-  console.log(`Text: "${text}", Pattern: "${pattern}", Matches: [${matches}], Replaced: "${replaced}"`);
-  return { matches, hasMatch: matches !== null, replaced };
-};
-
-// Test case: Promise handling
-const testPromiseOperations = async () => {
-  const promise1 = Promise.resolve('Promise 1 resolved');
-  const promise2 = new Promise(resolve => setTimeout(() => resolve('Promise 2 resolved'), 100));
-  const promise3 = Promise.resolve('Promise 3 resolved');
-
-  const results = await Promise.all([promise1, promise2, promise3]);
-  console.log('All promises resolved:', results);
-  return results;
-};
-
-// Test case: Type checking
-const testTypeChecking = (value) => {
-  const type = typeof value;
-  const isArray = Array.isArray(value);
-  const isNull = value === null;
-  const isUndefined = value === undefined;
-  const constructor = value?.constructor?.name || 'N/A';
-  console.log(`Value: ${value}, Type: ${type}, IsArray: ${isArray}, Constructor: ${constructor}`);
-  return { type, isArray, isNull, isUndefined, constructor };
 };
 
 // Test case: Set operations
@@ -328,16 +242,16 @@ const testSymbolAndWeakMap = () => {
 };
 
 // Test case: Generators
-function* testGenerator() {
-  yield 1;
-  yield 2;
-  yield 3;
-  yield 4;
-  yield 5;
-}
-
 const testGenerators = () => {
-  const gen = testGenerator();
+  function* basicGenerator() {
+    yield 1;
+    yield 2;
+    yield 3;
+    yield 4;
+    yield 5;
+  }
+
+  const gen = basicGenerator();
   const results = [];
 
   for (let value of gen) {
@@ -540,20 +454,10 @@ const testModernOperators = () => {
 const runAllTests = async () => {
   console.log('=== Running All Tests ===\n');
 
-  testArrayOperations([1, 2, 3, 4, 5]);
-  testObjectManipulation({ name: 'John', age: 30, city: 'Tokyo' });
-  testStringOperations('Hello World');
   testErrorHandling(false);
   testErrorHandling(true);
-  await testAsyncOperation(500);
   testMathOperations(10, 3);
   testArrayFiltering([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-  testDateOperations();
-  testJSONOperations({ id: 1, name: 'Test', active: true });
-  testRegexOperations('Hello World 123', '\\d+');
-  await testPromiseOperations();
-  testTypeChecking([1, 2, 3]);
-  testTypeChecking({ key: 'value' });
   testSetOperations();
   testMapOperations();
   testAdvancedArrayMethods([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
@@ -579,18 +483,9 @@ const runAllTests = async () => {
 
 // Export all test functions
 module.exports = {
-  testArrayOperations,
-  testObjectManipulation,
-  testStringOperations,
-  testAsyncOperation,
   testErrorHandling,
   testMathOperations,
   testArrayFiltering,
-  testDateOperations,
-  testJSONOperations,
-  testRegexOperations,
-  testPromiseOperations,
-  testTypeChecking,
   testSetOperations,
   testMapOperations,
   testAdvancedArrayMethods,
