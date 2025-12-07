@@ -59,32 +59,64 @@ ${diff}
 ===== DIFF END =====
 `;
 
-(async () => {
-  console.log("Calling Gemini...");
+// 簡易 sleep
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
-  let reviewText;
-  try {
-    const result = await model.generateContent(prompt);
-    reviewText = result.response.text();
-  } catch (err) {
-    // Handle GoogleGenerativeAIFetchError specifically
-    if (err instanceof GoogleGenerativeAIFetchError) {
-      // Transient errors: retry later or skip
-      if (err.status === 429 || err.status === 503) {
-        console.error(
-          `Gemini temporary error (${err.status}). Skipping AI review for this run.`
-        );
-        process.exit(0); // CI success - transient issue
+// 429 / 503 のときにリトライするラッパー
+async function generateReviewWithRetry(maxAttempts = 3, baseDelayMs = 20000) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      console.log(`Calling Gemini... (attempt ${attempt}/${maxAttempts})`);
+      const result = await model.generateContent(prompt);
+      return result.response.text();
+    } catch (err) {
+      const isFetchError = err instanceof GoogleGenerativeAIFetchError;
+      const isTransient =
+        isFetchError && (err.status === 429 || err.status === 503);
+
+      if (!isTransient) {
+        // 認証エラーなどの致命的エラーはそのまま投げる
+        console.error("Gemini API error (non-retryable):", err);
+        throw err;
       }
 
-      // Other API errors (auth, invalid request, etc.)
-      console.error(`Gemini API error (${err.status}):`, err.message);
-      process.exit(1);
-    }
+      if (attempt === maxAttempts) {
+        console.error(
+          `Gemini temporary error (${err.status}) after ${maxAttempts} attempts. Giving up for this run.`
+        );
+        return null; // 今回はレビュー諦める（CIは成功扱いにする）
+      }
 
-    // Network or other unknown errors
+      const delay = baseDelayMs * attempt; // 20s, 40s, 60s... みたいに増やす
+      console.error(
+        `Gemini temporary error (${err.status}). Retrying in ${Math.round(
+          delay / 1000
+        )} seconds...`
+      );
+      await sleep(delay);
+    }
+  }
+
+  return null;
+}
+
+(async () => {
+  let reviewText;
+
+  try {
+    reviewText = await generateReviewWithRetry();
+  } catch (err) {
+    // リトライ不能なエラー
     console.error("Unexpected error calling Gemini:", err);
     process.exit(1);
+  }
+
+  if (!reviewText) {
+    // 429/503 が続いたなど、一時的エラーで諦めたケース
+    console.log("Gemini review skipped due to temporary errors.");
+    process.exit(0); // CI としては成功扱い
   }
 
   console.log("Posting review to GitHub...");
