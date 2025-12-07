@@ -4,7 +4,7 @@
 
 ## 一覧
 
-- github-mcp
+- github
   - 種類: remote (GitHub公式)
   - URL: https://github-mcp.example.com
   - 用途: Pull Request 作成・取得

@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm init -y
-          npm install @google/generative-ai axios
+          npm install google-genai axios
 
       - name: Run Gemini review
         env:
