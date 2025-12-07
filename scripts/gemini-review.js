@@ -107,6 +107,7 @@ ${diff}
       console.error("GitHub API error:", err.response.status, err.response.data);
     } else {
       console.error("Network error posting to GitHub:", err.message);
+      console.error("Full error:", err);
     }
     process.exit(1);
   }
