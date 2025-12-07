@@ -1,8 +1,5 @@
-import fs from "fs";
 import axios from "axios";
 import { GoogleGenerativeAI, GoogleGenerativeAIFetchError } from "@google/generative-ai";
-
-const diff = fs.readFileSync("pr.diff", "utf8");
 
 const apiKey = process.env.GEMINI_API_KEY;
 if (!apiKey) {
