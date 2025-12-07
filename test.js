@@ -20,7 +20,7 @@ const testMathOperations = (x, y) => {
     multiply: x * y,
     divide: y !== 0 ? x / y : 'Cannot divide by zero',
     power: Math.pow(x, y),
-    modulo: x % y
+    modulo: y !== 0 ? x % y : 'Cannot modulo by zero'
   };
   console.log(`Math operations for ${x} and ${y}:`, operations);
   return operations;
