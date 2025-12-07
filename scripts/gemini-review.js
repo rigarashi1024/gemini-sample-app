@@ -1,13 +1,18 @@
 import fs from "fs";
 import axios from "axios";
-import { GoogleGenerativeAI } from "google-genai";
+import { GoogleGenerativeAI } from "@google/generative-ai"; // ★修正
 
 // --- Read diff ---
 const diff = fs.readFileSync("pr.diff", "utf8");
 
 // --- Gemini client ---
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-pro" });
+const apiKey = process.env.GEMINI_API_KEY;
+if (!apiKey) {
+    throw new Error("GEMINI_API_KEY is not set");
+}
+
+const genAI = new GoogleGenerativeAI(apiKey);
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-pro" }); // ← モデル名はお好みで
 
 // --- Prompt for Gemini ---
 const prompt = `
