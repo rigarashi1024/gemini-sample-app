@@ -13,6 +13,7 @@ const testErrorHandling = (shouldThrow = false) => {
 };
 
 // Test case: Math operations
+// Note: Both division and modulo operations include zero-division checks to prevent NaN
 const testMathOperations = (x, y) => {
   const operations = {
     add: x + y,
