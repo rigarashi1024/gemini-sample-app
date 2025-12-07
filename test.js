@@ -346,6 +346,139 @@ const testSymbolAndWeakMap = () => {
   return { symbolValue: user[id], hasKey, value };
 };
 
+// Test case: Generators
+function* testGenerator() {
+  yield 1;
+  yield 2;
+  yield 3;
+  yield 4;
+  yield 5;
+}
+
+const testGenerators = () => {
+  const gen = testGenerator();
+  const results = [];
+
+  for (let value of gen) {
+    results.push(value);
+  }
+
+  console.log(`Generator results: [${results}]`);
+
+  // Fibonacci generator
+  function* fibonacci(limit) {
+    let [prev, curr] = [0, 1];
+    for (let i = 0; i < limit; i++) {
+      yield curr;
+      [prev, curr] = [curr, prev + curr];
+    }
+  }
+
+  const fibResults = [...fibonacci(7)];
+  console.log(`Fibonacci sequence: [${fibResults}]`);
+
+  return { results, fibResults };
+};
+
+// Test case: Iterators
+const testIterators = () => {
+  const customIterable = {
+    data: [10, 20, 30, 40, 50],
+    [Symbol.iterator]() {
+      let index = 0;
+      const data = this.data;
+
+      return {
+        next() {
+          if (index < data.length) {
+            return { value: data[index++], done: false };
+          }
+          return { done: true };
+        }
+      };
+    }
+  };
+
+  const results = [...customIterable];
+  console.log(`Custom iterable results: [${results}]`);
+
+  return { results };
+};
+
+// Test case: Proxy
+const testProxy = () => {
+  const target = {
+    name: 'Alice',
+    age: 30
+  };
+
+  const handler = {
+    get(obj, prop) {
+      console.log(`Getting property: ${prop}`);
+      return prop in obj ? obj[prop] : `Property ${prop} not found`;
+    },
+    set(obj, prop, value) {
+      console.log(`Setting property: ${prop} = ${value}`);
+      if (prop === 'age' && typeof value !== 'number') {
+        throw new TypeError('Age must be a number');
+      }
+      obj[prop] = value;
+      return true;
+    }
+  };
+
+  const proxy = new Proxy(target, handler);
+  const name = proxy.name;
+  const missing = proxy.missing;
+  proxy.city = 'Tokyo';
+
+  console.log(`Proxy name: ${name}, missing: ${missing}, city: ${proxy.city}`);
+
+  return { name, missing, city: proxy.city };
+};
+
+// Test case: Reflect API
+const testReflect = () => {
+  const obj = { x: 1, y: 2 };
+
+  const hasX = Reflect.has(obj, 'x');
+  const keys = Reflect.ownKeys(obj);
+  Reflect.set(obj, 'z', 3);
+  const value = Reflect.get(obj, 'z');
+  const deleted = Reflect.deleteProperty(obj, 'y');
+
+  console.log(`Has x: ${hasX}, Keys: [${keys}], Value of z: ${value}, Deleted y: ${deleted}`);
+  console.log(`Remaining properties:`, obj);
+
+  return { hasX, keys, value, deleted, remaining: { ...obj } };
+};
+
+// Test case: Object methods and property descriptors
+const testObjectMethods = () => {
+  const obj = { a: 1, b: 2, c: 3 };
+
+  const frozen = Object.freeze({ ...obj });
+  const sealed = Object.seal({ ...obj });
+
+  const descriptor = Object.getOwnPropertyDescriptor(obj, 'a');
+  const entries = Object.entries(obj);
+  const fromEntries = Object.fromEntries([['x', 10], ['y', 20]]);
+
+  console.log(`Frozen:`, frozen);
+  console.log(`Sealed:`, sealed);
+  console.log(`Descriptor of 'a':`, descriptor);
+  console.log(`Entries:`, entries);
+  console.log(`From entries:`, fromEntries);
+
+  return {
+    isFrozen: Object.isFrozen(frozen),
+    isSealed: Object.isSealed(sealed),
+    descriptor,
+    entries,
+    fromEntries
+  };
+};
+
 // Main test runner
 const runAllTests = async () => {
   console.log('=== Running All Tests ===\n');
@@ -377,6 +510,11 @@ const runAllTests = async () => {
   testHigherOrderFunctions();
   testTemplateStrings();
   testSymbolAndWeakMap();
+  testGenerators();
+  testIterators();
+  testProxy();
+  testReflect();
+  testObjectMethods();
 
   console.log('\n=== All Tests Completed ===');
 };
@@ -408,6 +546,11 @@ module.exports = {
   testHigherOrderFunctions,
   testTemplateStrings,
   testSymbolAndWeakMap,
+  testGenerators,
+  testIterators,
+  testProxy,
+  testReflect,
+  testObjectMethods,
   Person,
   Developer,
   runAllTests
