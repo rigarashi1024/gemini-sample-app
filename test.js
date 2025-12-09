@@ -451,6 +451,123 @@ const testModernOperators = () => {
   return { city, country, zipCode, email: missing };
 };
 
+// Test case: Edge cases for array operations
+const testArrayEdgeCases = () => {
+  // Empty array
+  const emptyResult = testArrayFiltering([]);
+
+  // Single element
+  const singleResult = testArrayFiltering([1]);
+
+  // All even numbers
+  const allEvenResult = testArrayFiltering([2, 4, 6, 8]);
+
+  // All odd numbers
+  const allOddResult = testArrayFiltering([1, 3, 5, 7]);
+
+  // Negative numbers
+  const negativeResult = testArrayFiltering([-5, -4, -3, -2, -1, 0, 1, 2]);
+
+  console.log('Empty array test:', emptyResult);
+  console.log('Single element test:', singleResult);
+  console.log('All even test:', allEvenResult);
+  console.log('All odd test:', allOddResult);
+  console.log('Negative numbers test:', negativeResult);
+
+  return { emptyResult, singleResult, allEvenResult, allOddResult, negativeResult };
+};
+
+// Test case: Edge cases for math operations
+const testMathEdgeCases = () => {
+  const results = {
+    divideByZero: testMathOperations(10, 0),
+    moduloByZero: testMathOperations(7, 0),
+    negativeNumbers: testMathOperations(-10, -3),
+    largeNumbers: testMathOperations(1e15, 1e10),
+    floatingPoint: testMathOperations(0.1, 0.2),
+    zeroDivideZero: testMathOperations(0, 0)
+  };
+
+  console.log('Math edge cases:', results);
+
+  return results;
+};
+
+// Test case: Input validation helper
+const validateInput = (value, type, options = {}) => {
+  const { min, max, allowNull = false, allowUndefined = false } = options;
+
+  if (value === null && allowNull) return { valid: true, value };
+  if (value === undefined && allowUndefined) return { valid: true, value };
+
+  if (value === null || value === undefined) {
+    return { valid: false, error: `Value cannot be ${value}` };
+  }
+
+  switch (type) {
+    case 'number':
+      if (typeof value !== 'number' || isNaN(value)) {
+        return { valid: false, error: 'Value must be a valid number' };
+      }
+      if (min !== undefined && value < min) {
+        return { valid: false, error: `Value must be >= ${min}` };
+      }
+      if (max !== undefined && value > max) {
+        return { valid: false, error: `Value must be <= ${max}` };
+      }
+      return { valid: true, value };
+
+    case 'string':
+      if (typeof value !== 'string') {
+        return { valid: false, error: 'Value must be a string' };
+      }
+      if (min !== undefined && value.length < min) {
+        return { valid: false, error: `String length must be >= ${min}` };
+      }
+      if (max !== undefined && value.length > max) {
+        return { valid: false, error: `String length must be <= ${max}` };
+      }
+      return { valid: true, value };
+
+    case 'array':
+      if (!Array.isArray(value)) {
+        return { valid: false, error: 'Value must be an array' };
+      }
+      if (min !== undefined && value.length < min) {
+        return { valid: false, error: `Array length must be >= ${min}` };
+      }
+      if (max !== undefined && value.length > max) {
+        return { valid: false, error: `Array length must be <= ${max}` };
+      }
+      return { valid: true, value };
+
+    default:
+      return { valid: false, error: `Unknown type: ${type}` };
+  }
+};
+
+// Test case: Input validation tests
+const testInputValidation = () => {
+  const tests = {
+    validNumber: validateInput(42, 'number'),
+    invalidNumber: validateInput('42', 'number'),
+    numberOutOfRange: validateInput(150, 'number', { min: 0, max: 100 }),
+    validString: validateInput('Hello', 'string', { min: 1, max: 10 }),
+    invalidString: validateInput(123, 'string'),
+    stringTooShort: validateInput('Hi', 'string', { min: 5 }),
+    validArray: validateInput([1, 2, 3], 'array', { min: 1 }),
+    invalidArray: validateInput('not an array', 'array'),
+    emptyArrayAllowed: validateInput([], 'array', { min: 0 }),
+    nullNotAllowed: validateInput(null, 'number'),
+    nullAllowed: validateInput(null, 'number', { allowNull: true }),
+    nanTest: validateInput(NaN, 'number')
+  };
+
+  console.log('Input validation tests:', tests);
+
+  return tests;
+};
+
 // Main test runner
 const runAllTests = async () => {
   console.log('=== Running All Tests ===\n');
@@ -479,6 +596,11 @@ const runAllTests = async () => {
   testBigInt();
   testModernOperators();
 
+  console.log('\n=== Running Edge Case Tests ===\n');
+  testArrayEdgeCases();
+  testMathEdgeCases();
+  testInputValidation();
+
   console.log('\n=== All Tests Completed ===');
 };
 
@@ -506,6 +628,10 @@ module.exports = {
   testWeakSet,
   testBigInt,
   testModernOperators,
+  testArrayEdgeCases,
+  testMathEdgeCases,
+  validateInput,
+  testInputValidation,
   Person,
   Developer,
   runAllTests
