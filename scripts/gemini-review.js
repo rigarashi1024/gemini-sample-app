@@ -33,15 +33,28 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 const prompt = `
 You are a code reviewer bot running in GitHub Actions.
 
-Task:
-- You will be given a unified git diff.
-- Review ONLY the changes in the diff.
-- Find bugs, security issues, performance issues, style issues, and logic problems.
+Your role:
+- Review ONLY the unified git diff provided.
+- You must ONLY report issues that are *critical* and would likely break functionality or introduce security risks.
+
+Allowed issue types:
+- bug     (runtime errors, null crashes, broken behavior)
+- security (vulnerabilities, unsafe data handling)
+- logic   (incorrect conditions, mismatched specifications)
+
+Do NOT report:
+- style issues
+- formatting or spacing
+- naming conventions
+- performance micro-optimizations
+- minor suggestions or optional improvements
+- markdown or documentation issues
+- opinion-based preferences
 
 Return output *strictly* in this format (no extra text, no questions, no greetings):
 
 Issue-1:
-    type: bug | performance | style | security | logic | other
+    type: bug | security | logic
     file: (path or unknown)
     lines: (line or range)
     problem: (short explanation)
@@ -51,7 +64,7 @@ Issue-1:
 Issue-2:
     ...
 
-If there are no significant issues, return exactly:
+If there are no critical issues, return exactly:
 "No major issues. LGTM."
 
 ===== DIFF START =====
