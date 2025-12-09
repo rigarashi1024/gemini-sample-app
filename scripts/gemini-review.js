@@ -25,17 +25,35 @@ if (!diff.trim()) {
   process.exit(0);
 }
 
+// --- Read review rules summary ---
+const rulesFilePath = "docs/REVIEW_RULES_SUMMARY.md";
+let rulesSummary = "";
+
+try {
+  rulesSummary = fs.readFileSync(rulesFilePath, "utf8");
+} catch (err) {
+  console.warn(
+    `Rules summary file "${rulesFilePath}" not found. Continuing without explicit rules summary.`
+  );
+}
+
 // --- Gemini client ---
 const genAI = new GoogleGenerativeAI(apiKey);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
 // --- Prompt for Gemini ---
 const prompt = `
-You are a code reviewer bot running in GitHub Actions.
+You are a code reviewer bot running in GitHub Actions for the "PurposeSurvey" project.
+
+Project review rules & requirements (summary):
+------------------------------------------------------------
+${rulesSummary}
+------------------------------------------------------------
 
 Your role:
 - Review ONLY the unified git diff provided.
 - You must ONLY report issues that are *critical* and would likely break functionality or introduce security risks.
+- Follow the above project-specific review rules and constraints.
 
 Allowed issue types:
 - bug     (runtime errors, null crashes, broken behavior)
