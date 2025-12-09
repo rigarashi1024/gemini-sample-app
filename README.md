@@ -1,4 +1,4 @@
-# CLAUDE.md
+# README.md
 
 ## 1. プロジェクト概要（汎用版）
 
