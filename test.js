@@ -13,14 +13,15 @@ const testErrorHandling = (shouldThrow = false) => {
 };
 
 // Test case: Math operations
+// Note: Division and modulo by zero return NaN for type consistency
 const testMathOperations = (x, y) => {
   const operations = {
     add: x + y,
     subtract: x - y,
     multiply: x * y,
-    divide: y !== 0 ? x / y : 'Cannot divide by zero',
+    divide: y !== 0 ? x / y : NaN,
     power: Math.pow(x, y),
-    modulo: x % y
+    modulo: y !== 0 ? x % y : NaN
   };
   console.log(`Math operations for ${x} and ${y}:`, operations);
   return operations;
