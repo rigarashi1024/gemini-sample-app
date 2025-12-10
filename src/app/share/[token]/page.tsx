@@ -176,10 +176,16 @@ export default function SharePage() {
         return (
           <Input
             type="number"
-            value={(answers[question.id] as number) || ''}
-            onChange={(e) =>
-              handleAnswerChange(question.id, parseInt(e.target.value) || 0)
-            }
+            value={answers[question.id] !== undefined && answers[question.id] !== null ? answers[question.id] as number : ''}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === '') {
+                handleAnswerChange(question.id, question.required ? undefined : null);
+              } else {
+                const numValue = Number(value);
+                handleAnswerChange(question.id, isNaN(numValue) ? null : numValue);
+              }
+            }}
             placeholder="数値を入力"
           />
         );

@@ -54,6 +54,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!Array.isArray(questions) || questions.length === 0) {
+      return NextResponse.json(
+        { error: 'Questions must be a non-empty array' },
+        { status: 400 }
+      );
+    }
+
     const purpose = await prisma.purpose.create({
       data: {
         title,

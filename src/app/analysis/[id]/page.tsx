@@ -97,21 +97,29 @@ export default function AnalysisPage() {
       case 'number':
       case 'scale':
       case 'rating':
+        const isValidMin = typeof agg.min === 'number' && isFinite(agg.min);
+        const isValidAvg = typeof agg.average === 'number' && isFinite(agg.average);
+        const isValidMax = typeof agg.max === 'number' && isFinite(agg.max);
+
         return (
           <div className="grid grid-cols-3 gap-4">
             <div>
               <p className="text-sm text-slate-500">最小値</p>
-              <p className="text-2xl font-semibold">{agg.min}</p>
+              <p className="text-2xl font-semibold">
+                {isValidMin ? agg.min : 'N/A'}
+              </p>
             </div>
             <div>
               <p className="text-sm text-slate-500">平均値</p>
               <p className="text-2xl font-semibold">
-                {agg.average?.toFixed(2)}
+                {isValidAvg ? agg.average.toFixed(2) : 'N/A'}
               </p>
             </div>
             <div>
               <p className="text-sm text-slate-500">最大値</p>
-              <p className="text-2xl font-semibold">{agg.max}</p>
+              <p className="text-2xl font-semibold">
+                {isValidMax ? agg.max : 'N/A'}
+              </p>
             </div>
           </div>
         );

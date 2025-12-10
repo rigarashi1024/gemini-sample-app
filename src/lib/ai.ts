@@ -54,8 +54,18 @@ JSON以外は出力しないでください。`;
     jsonText = jsonText.replace(/^```\n/, '').replace(/\n```$/, '');
   }
 
-  const questions = JSON.parse(jsonText) as Question[];
-  return questions;
+  try {
+    const questions = JSON.parse(jsonText) as Question[];
+    if (!Array.isArray(questions)) {
+      console.error('LLM response is not an array:', jsonText);
+      throw new Error('Invalid response format: expected an array of questions');
+    }
+    return questions;
+  } catch (error) {
+    console.error('Failed to parse LLM response as JSON:', jsonText);
+    console.error('Parse error:', error);
+    throw new Error('Failed to generate questions: Invalid JSON response from LLM');
+  }
 }
 
 /**

@@ -16,6 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 同じclientIdからの重複回答をチェック
+    // clientIdがnullの場合は、uniqueConstraintが適用されないため新規作成する
     if (clientId) {
       const existing = await prisma.response.findUnique({
         where: {

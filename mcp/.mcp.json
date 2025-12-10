@@ -1,6 +1,6 @@
 {
     "mcpServers": {
-        "github": {
+        "github-mcp": {
             "type": "http",
             "url": "https://api.githubcopilot.com/mcp/",
             "auth": {
