@@ -75,10 +75,8 @@ export default function SharePage() {
           });
           setAnswers(answersMap);
         }
-        // 回答者名も反映
-        if (data.respondentName) {
-          setRespondentName(data.respondentName);
-        }
+        // 回答者名も反映（nullの場合は空文字列にする）
+        setRespondentName(data.respondentName || '');
       } else if (response.status === 404) {
         // 回答が存在しない場合は何もしない（新規回答）
         console.log('No existing response found');
