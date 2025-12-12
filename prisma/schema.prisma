@@ -1,0 +1,43 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Purpose: アンケートを作成するベースとなる目的
+model Purpose {
+  id          String     @id @default(cuid())
+  title       String
+  description String     @db.Text
+  questions   Json       // Questions型のJSON
+  shareToken  String     @unique @default(cuid())
+  deadline    DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  responses   Response[]
+
+  @@index([shareToken])
+  @@index([deadline])
+}
+
+// Response: アンケートの回答
+model Response {
+  id             String   @id @default(cuid())
+  purposeId      String
+  clientId       String?  // ブラウザを識別するID
+  respondentName String?
+  answers        Json     // Answers型のJSON
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  purpose        Purpose  @relation(fields: [purposeId], references: [id], onDelete: Cascade)
+
+  @@unique([purposeId, clientId])
+  @@index([purposeId])
+  @@index([clientId])
+}
