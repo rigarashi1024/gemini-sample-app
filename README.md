@@ -198,7 +198,6 @@ type Question = {
   - respondentName に保存されるニックネーム。未入力でも可
 - AI生成の質問
   - Purpose.questions（Questions JSON）をもとにフォームを動的にレンダリングする
-
 - 送信ボタン
   - クリック後に 集計・AI解析ページに遷移する（今回は回答者も集計画面を見てよい）
   - 集計画面では、回答者名など個人を特定し得る情報はマスキングする（例：ニックネームを一覧に出さない / サマリだけ表示する 等）
@@ -215,6 +214,7 @@ type Question = {
   - ページ読み込み時に以下を行う：
     - localStorage.getItem("purposeSurveyClientId") を確認
     - 存在しなければ uuid などで一意なIDを生成し、localStorage.setItem("purposeSurveyClientId", clientId) で保存
+    - 存在する場合、紐づく`clientId`の情報をアンケート画面に反映する。
     - clientId はこのブラウザからの全アンケート回答で共通に利用する
   - Response テーブルでは (purposeId, clientId) の組をユニークに扱うことで、同じブラウザから同じアンケートへの重複回答を抑制する（実装側でユニーク制約を入れてもよい）
 
