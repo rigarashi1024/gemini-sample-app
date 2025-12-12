@@ -44,6 +44,13 @@ export default function SharePage() {
     fetchPurpose();
   }, [token]);
 
+  // purposeが取得できたら、既存の回答を取得する
+  useEffect(() => {
+    if (purpose && clientId) {
+      fetchExistingResponse();
+    }
+  }, [purpose, clientId]);
+
   const fetchPurpose = async () => {
     try {
       const response = await fetch(`/api/share/${token}`);
@@ -57,6 +64,39 @@ export default function SharePage() {
       alert('アンケートが見つかりませんでした');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchExistingResponse = async () => {
+    if (!purpose || !clientId) return;
+
+    try {
+      const response = await fetch(
+        `/api/responses?purposeId=${purpose.id}&clientId=${clientId}`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        // 既存の回答をフォームに反映
+        if (data.answers) {
+          const answersMap: Record<string, AnswerValue> = {};
+          (data.answers as Answer[]).forEach((answer) => {
+            answersMap[answer.questionId] = answer.value;
+          });
+          setAnswers(answersMap);
+        }
+        // 回答者名も反映
+        if (data.respondentName) {
+          setRespondentName(data.respondentName);
+        }
+      } else if (response.status === 404) {
+        // 回答が存在しない場合は何もしない（新規回答）
+        console.log('No existing response found');
+      } else {
+        console.error('Failed to fetch existing response');
+      }
+    } catch (error) {
+      console.error('Error fetching existing response:', error);
     }
   };
 
