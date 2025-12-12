@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,20 +31,17 @@ export default function SharePage() {
   const [submitting, setSubmitting] = useState(false);
   const [clientId, setClientId] = useState<string>('');
 
+  // clientIdの初期化（最初に実行）
   useEffect(() => {
-    // clientIdの取得または生成
     let id = localStorage.getItem('purposeSurveyClientId');
     if (!id) {
       id = uuidv4();
       localStorage.setItem('purposeSurveyClientId', id);
     }
     setClientId(id);
+  }, []);
 
-    // Purposeデータの取得
-    fetchPurpose();
-  }, [token]);
-
-  const fetchPurpose = async () => {
+  const fetchPurpose = useCallback(async () => {
     try {
       const response = await fetch(`/api/share/${token}`);
       if (!response.ok) {
@@ -58,7 +55,52 @@ export default function SharePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
+
+  const fetchExistingResponse = useCallback(async () => {
+    if (!purpose || !clientId) return;
+
+    try {
+      const response = await fetch(
+        `/api/responses?purposeId=${purpose.id}&clientId=${clientId}`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        // 既存の回答をフォームに反映
+        if (data.answers) {
+          const answersMap: Record<string, AnswerValue> = {};
+          (data.answers as Answer[]).forEach((answer) => {
+            answersMap[answer.questionId] = answer.value;
+          });
+          setAnswers(answersMap);
+        }
+        // 回答者名も反映（nullの場合は空文字列にする）
+        setRespondentName(data.respondentName || '');
+      } else if (response.status === 404) {
+        // 回答が存在しない場合は何もしない（新規回答）
+        console.log('No existing response found');
+      } else {
+        console.error('Failed to fetch existing response');
+      }
+    } catch (error) {
+      console.error('Error fetching existing response:', error);
+    }
+  }, [purpose, clientId]);
+
+  // tokenが変わったらPurposeデータを取得
+  useEffect(() => {
+    if (token) {
+      fetchPurpose();
+    }
+  }, [token, fetchPurpose]);
+
+  // purposeとclientIdが両方揃ったら、既存の回答を取得する
+  useEffect(() => {
+    if (purpose && clientId) {
+      fetchExistingResponse();
+    }
+  }, [purpose, clientId, fetchExistingResponse]);
 
   const handleAnswerChange = (questionId: string, value: AnswerValue) => {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));

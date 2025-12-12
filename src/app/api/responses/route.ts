@@ -2,6 +2,46 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Answers } from '@/types/survey';
 
+// GET: 既存のResponseを取得（clientIdとpurposeIdで検索）
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const purposeId = searchParams.get('purposeId');
+    const clientId = searchParams.get('clientId');
+
+    if (!purposeId || !clientId) {
+      return NextResponse.json(
+        { error: 'PurposeId and clientId are required' },
+        { status: 400 }
+      );
+    }
+
+    const response = await prisma.response.findUnique({
+      where: {
+        purposeId_clientId: {
+          purposeId,
+          clientId,
+        },
+      },
+    });
+
+    if (!response) {
+      return NextResponse.json(
+        { error: 'Response not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(response);
+  } catch (error) {
+    console.error('Failed to fetch response:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch response' },
+      { status: 500 }
+    );
+  }
+}
+
 // POST: Response作成
 export async function POST(request: NextRequest) {
   try {
