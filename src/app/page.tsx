@@ -10,7 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Copy, FileText, BarChart3 } from 'lucide-react';
+import { Copy, FileText, BarChart3, Edit } from 'lucide-react';
+import { getPurposeSurveyStorage } from '@/lib/storage';
 
 type Purpose = {
   id: string;
@@ -27,9 +28,19 @@ type Purpose = {
 export default function Home() {
   const [purposes, setPurposes] = useState<Purpose[]>([]);
   const [loading, setLoading] = useState(true);
+  const [answeredPurposeIds, setAnsweredPurposeIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchPurposes();
+
+    // localStorageから回答済みのpurposeIdを取得
+    const storage = getPurposeSurveyStorage();
+    if (storage) {
+      const answeredIds = new Set(
+        storage.purposes.filter(p => p.hasAnswer).map(p => p.id)
+      );
+      setAnsweredPurposeIds(answeredIds);
+    }
   }, []);
 
   const fetchPurposes = async () => {
@@ -116,6 +127,14 @@ export default function Home() {
                           集計を確認
                         </Button>
                       </Link>
+                      {answeredPurposeIds.has(purpose.id) && (
+                        <Link href={`/share/${purpose.shareToken}`}>
+                          <Button variant="outline" size="sm">
+                            <Edit className="mr-2 h-4 w-4" />
+                            自分の回答を編集
+                          </Button>
+                        </Link>
+                      )}
                       {purpose.deadline && (
                         <span className="text-sm text-slate-500 self-center ml-auto">
                           締切: {new Date(purpose.deadline).toLocaleDateString('ja-JP')}

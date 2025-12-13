@@ -5,7 +5,8 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, TrendingUp } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Edit } from 'lucide-react';
+import { hasAnswered } from '@/lib/storage';
 
 type Aggregation = {
   questionId: string;
@@ -27,6 +28,7 @@ type AnalysisData = {
     title: string;
     description: string;
     deadline: string | null;
+    shareToken: string;
   };
   aggregation: Aggregation[];
   aiSummary: {
@@ -41,10 +43,17 @@ export default function AnalysisPage() {
   const id = params.id as string;
   const [data, setData] = useState<AnalysisData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAnswered, setIsAnswered] = useState(false);
 
   useEffect(() => {
     fetchAnalysis();
   }, [id]);
+
+  useEffect(() => {
+    if (data) {
+      setIsAnswered(hasAnswered(data.purpose.id));
+    }
+  }, [data]);
 
   const fetchAnalysis = async () => {
     try {
@@ -178,12 +187,22 @@ export default function AnalysisPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 py-12">
       <div className="container mx-auto px-4 max-w-5xl">
-        <Link href="/">
-          <Button variant="ghost" className="mb-6">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            トップに戻る
-          </Button>
-        </Link>
+        <div className="flex items-center justify-between mb-6">
+          <Link href="/">
+            <Button variant="ghost">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              トップに戻る
+            </Button>
+          </Link>
+          {isAnswered && (
+            <Link href={`/share/${data.purpose.shareToken}`}>
+              <Button variant="outline">
+                <Edit className="mr-2 h-4 w-4" />
+                自分の回答を編集
+              </Button>
+            </Link>
+          )}
+        </div>
 
         <Card className="mb-6">
           <CardHeader>
