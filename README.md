@@ -143,6 +143,20 @@ type Question = {
 
 ---
 
+## 5-2. LocalStorage保存情報
+
+```ts
+type PurposeSurvey = {
+    clientId: string;
+    purposes?: {
+        id: string,
+        hasAnswer: boolean
+    }[]
+}
+```
+
+---
+
 ## 6. 画面構成（汎用）
 
 ### 1. トップページ
@@ -189,6 +203,8 @@ type Question = {
     - shareToken: 乱数で生成したランダムな文字列
     - createdAt: 現在時刻
     - updatedAt: 現在時刻（以後編集があれば更新）
+  - `localStorage.getItem("PurposeSurvey")` を確認
+    - 存在しなければ `PurposeSurvey`の`clientId`に uuid などで生成したIDを入力、`purposes`に空配列を入力し、JSON文字列化したオブジェクトとして保存
 
 ### 4. 回答ページ（共有URL）
 
@@ -209,13 +225,39 @@ type Question = {
     - answers: フォームから得た回答内容（Answers 型）
     - createdAt: 現在時刻
     - updatedAt: 現在時刻
+  - 送信完了後、localStorage 内の PurposeSurvey を更新する：
+    - PurposeSurvey.purposes から `id == purposeId` の要素を探す
+    - 見つかった場合は、その要素の `hasAnswer` を `true` に更新する
+    - 見つからない場合は `{ id: purposeId, hasAnswer: true }` を PurposeSurvey.purposes に追加する
+    - 更新後の PurposeSurvey を JSON 文字列として localStorage に保存する
+
 - 画面読み込み時の clientId 処理
   - ブラウザごとに1つの clientId を持つ想定とする
   - ページ読み込み時に以下を行う：
-    - localStorage.getItem("purposeSurveyClientId") を確認
-    - 存在しなければ uuid などで一意なIDを生成し、localStorage.setItem("purposeSurveyClientId", clientId) で保存
-    - 存在する場合、紐づく`clientId`の情報をアンケート画面に反映する。
-    - clientId はこのブラウザからの全アンケート回答で共通に利用する
+    1. localStorage.getItem("PurposeSurvey") を確認する
+    2. もし存在しない場合：
+       - 新しい clientId（uuid など）を生成する
+       - PurposeSurvey オブジェクトを次の形式で作成し、localStorage に保存する：
+         {
+           clientId: <生成した clientId>,
+           purposes: [
+             {
+               id: <現在表示中の purposeId>,
+               hasAnswer: false
+             }
+           ]
+         }
+    3. すでに PurposeSurvey が存在する場合：
+       - JSON.parse して PurposeSurvey オブジェクトを取得する
+       - PurposeSurvey.purposes の中から `id === purposeId` の要素を探す
+         - 見つからない場合：
+           - `{ id: purposeId, hasAnswer: false }` を PurposeSurvey.purposes に追加する
+         - 見つかった場合：
+           - その要素の `hasAnswer` が true であれば、
+             「このブラウザはすでにこのアンケートへ回答済み」とみなし、
+             UI 側でそれに応じた表示（再回答ブロック・注意メッセージなど）を行う
+       - 更新された PurposeSurvey オブジェクトを JSON 文字列として localStorage に保存する
+    4. clientId はこのブラウザからの全アンケート回答で共通に利用する
   - Response テーブルでは (purposeId, clientId) の組をユニークに扱うことで、同じブラウザから同じアンケートへの重複回答を抑制する（実装側でユニーク制約を入れてもよい）
 
 ### 5. 集計・AI解析ページ
