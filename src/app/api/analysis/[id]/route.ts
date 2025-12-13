@@ -108,6 +108,7 @@ export async function GET(
         title: purpose.title,
         description: purpose.description,
         deadline: purpose.deadline,
+        shareToken: purpose.shareToken,
       },
       aggregation,
       aiSummary,
