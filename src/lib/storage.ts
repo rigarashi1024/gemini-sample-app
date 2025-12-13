@@ -10,7 +10,7 @@ export function getPurposeSurveyStorage(): PurposeSurveyStorage | null {
   if (typeof window === 'undefined') return null;
 
   const stored = localStorage.getItem(STORAGE_KEY);
-  if (!stored) return null;
+  if (stored === null || stored === '') return null;
 
   try {
     return JSON.parse(stored) as PurposeSurveyStorage;
