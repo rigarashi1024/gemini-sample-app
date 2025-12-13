@@ -34,12 +34,14 @@ export default function Home() {
     fetchPurposes();
 
     // localStorageから回答済みのpurposeIdを取得
-    const storage = getPurposeSurveyStorage();
-    if (storage) {
-      const answeredIds = new Set(
-        storage.purposes.filter(p => p.hasAnswer).map(p => p.id)
-      );
-      setAnsweredPurposeIds(answeredIds);
+    if (typeof window !== 'undefined') {
+      const storage = getPurposeSurveyStorage();
+      if (storage) {
+        const answeredIds = new Set(
+          storage.purposes.filter(p => p.hasAnswer).map(p => p.id)
+        );
+        setAnsweredPurposeIds(answeredIds);
+      }
     }
   }, []);
 

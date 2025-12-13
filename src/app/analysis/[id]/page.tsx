@@ -50,7 +50,7 @@ export default function AnalysisPage() {
   }, [id]);
 
   useEffect(() => {
-    if (data) {
+    if (data && data.purpose) {
       setIsAnswered(hasAnswered(data.purpose.id));
     }
   }, [data]);
