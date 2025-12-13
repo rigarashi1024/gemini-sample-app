@@ -47,3 +47,12 @@ export type AISummary = {
   insights: string;        // 要約・インサイト
   recommendations: string; // 推奨アクション
 }
+
+// localStorage用の型定義
+export type PurposeSurveyStorage = {
+  clientId: string;
+  purposes: Array<{
+    id: string;
+    hasAnswer: boolean;
+  }>;
+}
