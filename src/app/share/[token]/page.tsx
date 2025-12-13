@@ -32,15 +32,16 @@ export default function SharePage() {
   const [clientId, setClientId] = useState<string>('');
   const [alreadyAnswered, setAlreadyAnswered] = useState(false);
 
-  // clientIdの初期化とpurpose情報の登録（最初に実行）
+  // clientIdの初期化とpurpose情報の登録
+  // purposeが取得できた時点で実行される
   useEffect(() => {
-    if (purpose) {
-      const id = getOrCreateClientId(purpose.id);
-      setClientId(id);
+    if (!purpose) return;
 
-      // すでに回答済みかチェック
-      setAlreadyAnswered(hasAnswered(purpose.id));
-    }
+    const id = getOrCreateClientId(purpose.id);
+    setClientId(id);
+
+    // すでに回答済みかチェック
+    setAlreadyAnswered(hasAnswered(purpose.id));
   }, [purpose]);
 
   const fetchPurpose = useCallback(async () => {
