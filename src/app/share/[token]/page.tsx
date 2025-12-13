@@ -7,9 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Send } from 'lucide-react';
+import { Send, AlertCircle } from 'lucide-react';
 import { Question, Answer, AnswerValue } from '@/types/survey';
-import { v4 as uuidv4 } from 'uuid';
+import { getOrCreateClientId, hasAnswered, markAsAnswered } from '@/lib/storage';
 
 type PurposeData = {
   id: string;
@@ -30,16 +30,18 @@ export default function SharePage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [clientId, setClientId] = useState<string>('');
+  const [alreadyAnswered, setAlreadyAnswered] = useState(false);
 
-  // clientIdの初期化（最初に実行）
+  // clientIdの初期化とpurpose情報の登録（最初に実行）
   useEffect(() => {
-    let id = localStorage.getItem('purposeSurveyClientId');
-    if (!id) {
-      id = uuidv4();
-      localStorage.setItem('purposeSurveyClientId', id);
+    if (purpose) {
+      const id = getOrCreateClientId(purpose.id);
+      setClientId(id);
+
+      // すでに回答済みかチェック
+      setAlreadyAnswered(hasAnswered(purpose.id));
     }
-    setClientId(id);
-  }, []);
+  }, [purpose]);
 
   const fetchPurpose = useCallback(async () => {
     try {
@@ -144,6 +146,9 @@ export default function SharePage() {
       if (!response.ok) {
         throw new Error('Failed to submit response');
       }
+
+      // localStorageのhasAnswerフラグを更新
+      markAsAnswered(purpose.id);
 
       alert('回答を送信しました');
       router.push(`/analysis/${purpose.id}`);
@@ -271,6 +276,24 @@ export default function SharePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 py-12">
       <div className="container mx-auto px-4 max-w-3xl">
+        {alreadyAnswered && (
+          <Card className="mb-6 border-amber-200 bg-amber-50">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
+                <div>
+                  <p className="font-medium text-amber-900">
+                    このブラウザはすでにこのアンケートに回答済みです
+                  </p>
+                  <p className="text-sm text-amber-700 mt-1">
+                    回答を編集して再送信することができます。送信すると以前の回答が上書きされます。
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-2xl">{purpose.title}</CardTitle>
