@@ -1,0 +1,60 @@
+{
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 300,
+    "files.confirmSave": false,
+    "window.confirmBeforeClose": "never",
+    "terminal.integrated.confirmOnExit": false,
+    "files.hotExit": "onExitAndWindowClose",
+
+    "explorer.confirmDelete": false,
+    "explorer.confirmDragAndDrop": false,
+
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll": true,
+      "source.fixAll.eslint": true,
+      "source.organizeImports": true
+    },
+
+    "diffEditor.ignoreTrimWhitespace": false,
+  
+    "typescript.validate.enable": true,
+    "typescript.suggest.completeFunctionCalls": true,
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "javascript.updateImportsOnFileMove.enabled": "always",
+  
+    "git.autofetch": true,
+    "git.pullRebase": true,
+    "git.confirmSync": false,
+    "git.enableSmartCommit": true,
+  
+    "git.untrackedChanges": "mixed",
+  
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/.git": true,
+      "**/.next": true,
+      "**/dist": true,
+      "**/build": true,
+      "**/coverage": true
+    },
+    "files.watcherExclude": {
+      "**/node_modules/**": true,
+      "**/.git/**": true,
+      "**/.next/**": true,
+      "**/dist/**": true,
+      "**/build/**": true,
+      "**/coverage/**": true
+    },
+  
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    "editor.wordWrap": "on",
+    "editor.renderWhitespace": "boundary",
+    "editor.minimap.enabled": false,
+  
+    "security.workspace.trust.enabled": true
+  }
+  
