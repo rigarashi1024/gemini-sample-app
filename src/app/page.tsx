@@ -47,9 +47,13 @@ export default function Home() {
         setAnsweredPurposeIds(answeredIds);
       }
 
-      // clientIdが取得できたらデータを取得
-      fetchCreatedPurposes(id);
-      fetchAnsweredPurposes(id);
+      // 両方のデータ取得が完了してからloadingをfalseにする
+      Promise.all([
+        fetchCreatedPurposes(id),
+        fetchAnsweredPurposes(id)
+      ]).finally(() => {
+        setLoading(false);
+      });
     }
   }, []);
 
@@ -60,8 +64,6 @@ export default function Home() {
       setCreatedPurposes(data);
     } catch (error) {
       console.error('Failed to fetch created purposes:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
