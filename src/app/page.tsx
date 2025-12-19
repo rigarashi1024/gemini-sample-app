@@ -143,20 +143,20 @@ export default function Home() {
                         <Copy className="mr-2 h-4 w-4" />
                         共有URLをコピー
                       </Button>
+                      {!answeredPurposeIds.has(purpose.id) && (
+                        <Link href={`/share/${purpose.shareToken}`}>
+                          <Button variant="outline" size="sm">
+                            <Edit className="mr-2 h-4 w-4" />
+                            回答を実施
+                          </Button>
+                        </Link>
+                      )}
                       <Link href={`/analysis/${purpose.id}`}>
                         <Button variant="outline" size="sm">
                           <BarChart3 className="mr-2 h-4 w-4" />
                           集計を確認
                         </Button>
                       </Link>
-                      {answeredPurposeIds.has(purpose.id) && (
-                        <Link href={`/share/${purpose.shareToken}`}>
-                          <Button variant="outline" size="sm">
-                            <Edit className="mr-2 h-4 w-4" />
-                            自分の回答を編集
-                          </Button>
-                        </Link>
-                      )}
                       {purpose.deadline && (
                         <span className="text-sm text-slate-500 self-center ml-auto">
                           締切: {new Date(purpose.deadline).toLocaleDateString('ja-JP')}
@@ -200,7 +200,7 @@ export default function Home() {
                       <Link href={`/share/${purpose.shareToken}`}>
                         <Button variant="outline" size="sm">
                           <Edit className="mr-2 h-4 w-4" />
-                          自分の回答を編集
+                          回答を編集
                         </Button>
                       </Link>
                       <Link href={`/analysis/${purpose.id}`}>
