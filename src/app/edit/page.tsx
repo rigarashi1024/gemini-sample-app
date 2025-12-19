@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Save, RefreshCw, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { Question } from '@/types/survey';
+import { getOrCreateClientId } from '@/lib/storage';
 
 function EditPageContent() {
   const router = useRouter();
@@ -76,6 +77,9 @@ function EditPageContent() {
     setLoading(true);
 
     try {
+      // localStorageからclientIdを取得または生成
+      const clientId = getOrCreateClientId();
+
       const response = await fetch('/api/purposes', {
         method: 'POST',
         headers: {
@@ -86,6 +90,7 @@ function EditPageContent() {
           description,
           questions,
           deadline: null,
+          createdBy: clientId,
         }),
       });
 
