@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Copy, FileText, BarChart3, Edit } from 'lucide-react';
-import { getPurposeSurveyStorage } from '@/lib/storage';
+import { getPurposeSurveyStorage, getOrCreateClientId } from '@/lib/storage';
 
 type Purpose = {
   id: string;
