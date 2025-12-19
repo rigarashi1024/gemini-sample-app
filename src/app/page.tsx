@@ -35,10 +35,11 @@ export default function Home() {
   useEffect(() => {
     // localStorageからclientIdを取得または生成
     if (typeof window !== 'undefined') {
-      const storage = getPurposeSurveyStorage();
-      const id = storage?.clientId || '';
+      // getOrCreateClientId()を呼び出してclientIdを確実に取得
+      const id = getOrCreateClientId();
       setClientId(id);
 
+      const storage = getPurposeSurveyStorage();
       if (storage) {
         const answeredIds = new Set(
           storage.purposes.filter(p => p.hasAnswer).map(p => p.id)
@@ -46,12 +47,9 @@ export default function Home() {
         setAnsweredPurposeIds(answeredIds);
       }
 
-      if (id) {
-        fetchCreatedPurposes(id);
-        fetchAnsweredPurposes(id);
-      } else {
-        setLoading(false);
-      }
+      // clientIdが取得できたらデータを取得
+      fetchCreatedPurposes(id);
+      fetchAnsweredPurposes(id);
     }
   }, []);
 
