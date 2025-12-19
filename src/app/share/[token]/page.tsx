@@ -277,16 +277,14 @@ export default function SharePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 py-12">
       <div className="container mx-auto px-4 max-w-3xl">
-        {alreadyAnswered && (
-          <Button
-            variant="ghost"
-            onClick={() => router.back()}
-            className="mb-6"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            前のページに戻る
-          </Button>
-        )}
+        <Button
+          variant="ghost"
+          onClick={() => router.back()}
+          className="mb-6"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          前のページに戻る
+        </Button>
         {alreadyAnswered && (
           <Card className="mb-6 border-amber-200 bg-amber-50">
             <CardContent className="pt-6">
