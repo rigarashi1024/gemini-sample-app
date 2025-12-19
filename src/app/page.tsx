@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Copy, FileText, BarChart3, Edit } from 'lucide-react';
-import { getPurposeSurveyStorage } from '@/lib/storage';
+import { getPurposeSurveyStorage, getOrCreateClientId } from '@/lib/storage';
 
 type Purpose = {
   id: string;
@@ -26,15 +26,19 @@ type Purpose = {
 };
 
 export default function Home() {
-  const [purposes, setPurposes] = useState<Purpose[]>([]);
+  const [createdPurposes, setCreatedPurposes] = useState<Purpose[]>([]);
+  const [answeredPurposes, setAnsweredPurposes] = useState<Purpose[]>([]);
   const [loading, setLoading] = useState(true);
   const [answeredPurposeIds, setAnsweredPurposeIds] = useState<Set<string>>(new Set());
+  const [clientId, setClientId] = useState<string>('');
 
   useEffect(() => {
-    fetchPurposes();
-
-    // localStorageから回答済みのpurposeIdを取得
+    // localStorageからclientIdを取得または生成
     if (typeof window !== 'undefined') {
+      // getOrCreateClientId()を呼び出してclientIdを確実に取得
+      const id = getOrCreateClientId();
+      setClientId(id);
+
       const storage = getPurposeSurveyStorage();
       if (storage) {
         const answeredIds = new Set(
@@ -42,18 +46,34 @@ export default function Home() {
         );
         setAnsweredPurposeIds(answeredIds);
       }
+
+      // 両方のデータ取得が完了してからloadingをfalseにする
+      Promise.all([
+        fetchCreatedPurposes(id),
+        fetchAnsweredPurposes(id)
+      ]).finally(() => {
+        setLoading(false);
+      });
     }
   }, []);
 
-  const fetchPurposes = async () => {
+  const fetchCreatedPurposes = async (createdBy: string) => {
     try {
-      const response = await fetch('/api/purposes');
+      const response = await fetch(`/api/purposes?createdBy=${createdBy}`);
       const data = await response.json();
-      setPurposes(data);
+      setCreatedPurposes(data);
     } catch (error) {
-      console.error('Failed to fetch purposes:', error);
-    } finally {
-      setLoading(false);
+      console.error('Failed to fetch created purposes:', error);
+    }
+  };
+
+  const fetchAnsweredPurposes = async (clientId: string) => {
+    try {
+      const response = await fetch(`/api/answered-surveys?clientId=${clientId}`);
+      const data = await response.json();
+      setAnsweredPurposes(data);
+    } catch (error) {
+      console.error('Failed to fetch answered purposes:', error);
     }
   };
 
@@ -90,7 +110,7 @@ export default function Home() {
             <div className="text-center py-12">
               <p className="text-slate-500">読み込み中...</p>
             </div>
-          ) : purposes.length === 0 ? (
+          ) : createdPurposes.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
                 <p className="text-slate-500">
@@ -100,7 +120,7 @@ export default function Home() {
             </Card>
           ) : (
             <div className="space-y-4">
-              {purposes.map((purpose) => (
+              {createdPurposes.map((purpose) => (
                 <Card key={purpose.id} className="hover:shadow-md transition-shadow">
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
@@ -137,6 +157,58 @@ export default function Home() {
                           </Button>
                         </Link>
                       )}
+                      {purpose.deadline && (
+                        <span className="text-sm text-slate-500 self-center ml-auto">
+                          締切: {new Date(purpose.deadline).toLocaleDateString('ja-JP')}
+                        </span>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold text-slate-900 mb-6">
+            回答済みアンケート
+          </h2>
+
+          {answeredPurposes.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <p className="text-slate-500">
+                  まだアンケートに回答していません
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {answeredPurposes.map((purpose) => (
+                <Card key={purpose.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span>{purpose.title}</span>
+                    </CardTitle>
+                    <CardDescription className="line-clamp-2">
+                      {purpose.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex gap-2 flex-wrap">
+                      <Link href={`/share/${purpose.shareToken}`}>
+                        <Button variant="outline" size="sm">
+                          <Edit className="mr-2 h-4 w-4" />
+                          自分の回答を編集
+                        </Button>
+                      </Link>
+                      <Link href={`/analysis/${purpose.id}`}>
+                        <Button variant="outline" size="sm">
+                          <BarChart3 className="mr-2 h-4 w-4" />
+                          集計を確認
+                        </Button>
+                      </Link>
                       {purpose.deadline && (
                         <span className="text-sm text-slate-500 self-center ml-auto">
                           締切: {new Date(purpose.deadline).toLocaleDateString('ja-JP')}

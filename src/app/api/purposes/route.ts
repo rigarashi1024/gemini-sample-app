@@ -4,15 +4,29 @@ import { generateQuestions } from '@/lib/ai';
 import { PurposeInput, Question } from '@/types/survey';
 
 // GET: Purpose一覧取得（期限切れでないもののみ）
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const createdBy = searchParams.get('createdBy');
+
+    const where: any = {
+      AND: [
+        {
+          OR: [
+            { deadline: null },
+            { deadline: { gte: new Date() } },
+          ],
+        },
+      ],
+    };
+
+    // createdByパラメータがある場合はフィルタリング
+    if (createdBy) {
+      where.AND.push({ createdBy });
+    }
+
     const purposes = await prisma.purpose.findMany({
-      where: {
-        OR: [
-          { deadline: null },
-          { deadline: { gte: new Date() } },
-        ],
-      },
+      where,
       orderBy: {
         createdAt: 'desc',
       },
@@ -45,11 +59,18 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, description, questions, deadline } = body;
+    const { title, description, questions, deadline, createdBy } = body;
 
     if (!title || !description || !questions) {
       return NextResponse.json(
         { error: 'Title, description, and questions are required' },
+        { status: 400 }
+      );
+    }
+
+    if (!createdBy) {
+      return NextResponse.json(
+        { error: 'createdBy (clientId) is required' },
         { status: 400 }
       );
     }
@@ -67,6 +88,7 @@ export async function POST(request: NextRequest) {
         description,
         questions,
         deadline: deadline ? new Date(deadline) : null,
+        createdBy,
       },
     });
 

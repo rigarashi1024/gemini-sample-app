@@ -228,7 +228,7 @@ export default function SharePage() {
             onChange={(e) => {
               const value = e.target.value;
               if (value === '') {
-                handleAnswerChange(question.id, question.required ? undefined : null);
+                handleAnswerChange(question.id, null);
               } else {
                 const numValue = Number(value);
                 handleAnswerChange(question.id, isNaN(numValue) ? null : numValue);

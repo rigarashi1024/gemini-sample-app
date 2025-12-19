@@ -121,7 +121,7 @@ export default function AnalysisPage() {
             <div>
               <p className="text-sm text-slate-500">平均値</p>
               <p className="text-2xl font-semibold">
-                {isValidAvg ? agg.average.toFixed(2) : 'N/A'}
+                {isValidAvg && agg.average !== undefined ? agg.average.toFixed(2) : 'N/A'}
               </p>
             </div>
             <div>
