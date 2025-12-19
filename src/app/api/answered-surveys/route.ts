@@ -40,9 +40,10 @@ export async function GET(request: NextRequest) {
     });
 
     // Purpose情報のみを抽出（重複除去）
+    // response.purposeがnullの場合（Purposeが削除された場合）はスキップ
     const purposesMap = new Map();
     responses.forEach((response) => {
-      if (!purposesMap.has(response.purpose.id)) {
+      if (response.purpose && !purposesMap.has(response.purpose.id)) {
         purposesMap.set(response.purpose.id, response.purpose);
       }
     });

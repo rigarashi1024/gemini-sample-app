@@ -10,15 +10,19 @@ export async function GET(request: NextRequest) {
     const createdBy = searchParams.get('createdBy');
 
     const where: any = {
-      OR: [
-        { deadline: null },
-        { deadline: { gte: new Date() } },
+      AND: [
+        {
+          OR: [
+            { deadline: null },
+            { deadline: { gte: new Date() } },
+          ],
+        },
       ],
     };
 
     // createdByパラメータがある場合はフィルタリング
     if (createdBy) {
-      where.createdBy = createdBy;
+      where.AND.push({ createdBy });
     }
 
     const purposes = await prisma.purpose.findMany({
