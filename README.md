@@ -192,22 +192,22 @@ type PurposeSurvey = {
 
 - 「目的を入力してアンケートを自動生成」ボタン
   - クリック後に目的作成ページに遷移
-- 生成済みアンケート（Purpose）のタイトル一覧
+- 作成済みアンケート（Purpose）のタイトル一覧
   - `localStorage.getItem("PurposeSurvey")` を確認
     - `PurposeSurvey`の`clientId`が存在している場合のみ、`Purpose.createdBy = PurposeSurvey.clientId` のレコードのみ取得して表示する
   - 期限（deadline）を過ぎていない Purpose のみリスト表示する
-  - 各タイトルにはアンケート確認・編集ページへのリンクが含まれる
   - 各タイトルの横に「共有用URLをコピー」ボタンを配置
     - ページ生成時に Purpose.shareToken をベースに共有用URLを生成しておく
     - クリック時、そのURLをクリップボードにコピーする
+  - アンケート作成者自身がアンケートを未回答の場合のみ、各タイトルの横に「回答を実施」ボタンを配置
+  - 「集計内容を確認」ボタンを配置
 - 回答済みアンケートの一覧
   - `localStorage.getItem("PurposeSurvey")` を確認
     - `PurposeSurvey`の`clientId`が存在している場合のみ、`Response.clientId = PurposeSurvey.clientId` のレコードから JOIN して `Purpose` 情報を取得して表示する
   - アンケートタイトルを表示
-  - 各タイトルの横に「自分の回答を編集」ボタンを配置
+  - 各タイトルの横に「回答を編集」ボタンを配置
     - クリック時に回答ページ（共有URL）に遷移
-
-- 「集計内容を確認」ボタン
+  - 「集計内容を確認」ボタンを配置
 - 各Purpose 行ごとに配置されている前提とし、クリック後にその Purpose の集計・AI解析ページに遷移する
 
 ### 2. 目的作成ページ
