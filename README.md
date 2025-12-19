@@ -132,12 +132,15 @@
 
 #### Purpose（アンケートを作成するベースとなる目的）
 
+Purpose 作成前に `PurposeSurvey.clientId` を必ず用意する
+
 - `id: string` - 一意となるID
 - `title: string` — ユーザーが入力したタイトル
 - `description: string` — ユーザーが入力した目的
 - `questions: Json` - descriptionをベースに作成された質問。**`Questions` 型の JSON を保存する**（下記JSON定義を参照）
 - `shareToken: string` - URL用のランダムトークン
 - `deadline: Datetime | null` - アンケートの締切日
+- `createdBy: string` - `localStorage` に保存されている `clientId` を使用する
 - `createdAt: Datetime` - レコードの作成日
 - `updatedAt: Datetime` - レコードの更新日（初回はcreatedAtと同じDatetimeを保存）
 
@@ -190,13 +193,18 @@ type PurposeSurvey = {
 - 「目的を入力してアンケートを自動生成」ボタン
   - クリック後に目的作成ページに遷移
 - 生成済みアンケート（Purpose）のタイトル一覧
+  - `localStorage.getItem("PurposeSurvey")` を確認
+    - `PurposeSurvey`の`clientId`が存在している場合のみ、`Purpose.createdBy = PurposeSurvey.clientId` のレコードのみ取得して表示する
   - 期限（deadline）を過ぎていない Purpose のみリスト表示する
   - 各タイトルにはアンケート確認・編集ページへのリンクが含まれる
   - 各タイトルの横に「共有用URLをコピー」ボタンを配置
     - ページ生成時に Purpose.shareToken をベースに共有用URLを生成しておく
     - クリック時、そのURLをクリップボードにコピーする
+- 回答済みアンケートの一覧
+  - `localStorage.getItem("PurposeSurvey")` を確認
+    - `PurposeSurvey`の`clientId`が存在している場合のみ、`Response.clientId = PurposeSurvey.clientId` のレコードから JOIN して `Purpose` 情報を取得して表示する
+  - アンケートタイトルを表示
   - 各タイトルの横に「自分の回答を編集」ボタンを配置
-    - 回答済みの場合のみ表示
     - クリック時に回答ページ（共有URL）に遷移
 
 - 「集計内容を確認」ボタン
@@ -214,7 +222,7 @@ type PurposeSurvey = {
 ### 3. アンケート確認・編集ページ
 
 - タイトル
-- ユーザーが目的作成ページで入力したタイトルを表示（保存時に Purpose.title として使う）
+- ユーザーが目的作成ページで入力したタイトルを表示（保存時に `Purpose.title` として使う）
 - AI生成したアンケート内容（Questions）
   - AIが description をもとに生成した質問一覧を表示
   - 必要であればユーザーが質問文・必須フラグ・選択肢などを編集できる
@@ -224,36 +232,38 @@ type PurposeSurvey = {
   - クリックすると、同じタイトル・説明から再度 AI に質問生成を依頼し、一覧を置き換える
 - 「保存」ボタン
   - クリック後、トップページに遷移
+  - 保存処理の前に、`localStorage.getItem("PurposeSurvey")` を確認する
+    - 存在しない場合は、新しい `clientId`（uuid など）を生成し、`PurposeSurvey` オブジェクト（clientId, purposes: []）を作成して保存する
   - 入力した内容を基に Purpose レコードを作成する：
     - id: 自動生成
     - title, description: 目的作成ページから引き継いだもの
-    - questions: 編集済みの Questions JSON を保存
-    - deadline: 必要に応じて、質問内容とは別に Purpose 自体の締切を設定（未設定でも可）
+    - questions: 編集済みの `Questions` JSON を保存
+    - deadline: 必要に応じて、質問内容とは別に `Purpose` 自体の締切を設定（未設定でも可）
     - shareToken: 乱数で生成したランダムな文字列
+    - createdBy: `localStorage` に保存されている `PurposeSurvey.clientId` を使用する
     - createdAt: 現在時刻
     - updatedAt: 現在時刻（以後編集があれば更新）
-  - `localStorage.getItem("PurposeSurvey")` を確認
-    - 存在しなければ `PurposeSurvey`の`clientId`に uuid などで生成したIDを入力、`purposes`に空配列を入力し、JSON文字列化したオブジェクトとして保存
 
 ### 4. 回答ページ（共有URL）
 
 - タイトル
-  - Purpose.title を表示
+  - `Purpose.title` を表示
 - アンケート回答者名入力欄
-  - respondentName に保存されるニックネーム。未入力でも可
+  - `respondentName` に保存されるニックネーム。未入力でも可
 - AI生成の質問
-  - Purpose.questions（Questions JSON）をもとにフォームを動的にレンダリングする
+  - `Purpose.questions`（Questions JSON）をもとにフォームを動的にレンダリングする
 - 送信ボタン
   - クリック後に 集計・AI解析ページに遷移する（今回は回答者も集計画面を見てよい）
-  - 集計画面では、回答者名など個人を特定し得る情報はマスキングする（例：ニックネームを一覧に出さない / サマリだけ表示する 等）
-  - 入力した内容を基に Response レコードを作成する：
-    - id: 自動生成
-    - purposeId: 対象の Purpose のID
-    - clientId: localStorage に保存されている clientId を使用
+  - (purposeId, clientId) の組み合わせで既存の `Response` レコードが存在する場合は「更新」、存在しない場合は「新規作成」として扱う（実装上は UPSERT などを利用してよい）
+  - 入力した内容を基に `Response` レコードを作成または更新する：
+    - id: 自動生成（更新時は既存の id を維持）
+    - purposeId: 対象の `Purpose` のID
+    - clientId: `localStorage` に保存されている `PurposeSurvey.clientId` を使用
     - respondentName: 入力されたニックネーム（未入力なら null）
-    - answers: フォームから得た回答内容（Answers 型）
-    - createdAt: 現在時刻
+    - answers: フォームから得た回答内容（`Answers` 型）
+    - createdAt: 新規作成時は現在時刻、更新時は既存レコードの値を維持
     - updatedAt: 現在時刻
+  - 集計画面では、回答者名など個人を特定し得る情報はマスキングする（例：ニックネームを一覧に出さない / サマリだけ表示する 等）
   - 送信完了後、localStorage 内の PurposeSurvey を更新する：
     - PurposeSurvey.purposes から `id == purposeId` の要素を探す
     - 見つかった場合は、その要素の `hasAnswer` を `true` に更新する
@@ -310,6 +320,8 @@ type PurposeSurvey = {
     - どのような旅行プランになりそうか
     - どのような準備物が必要か
   - など、テキストベースで推奨案を返す（外部APIによる実店舗検索等は行わない）
+- 「トップに戻る」ボタン
+  - トップページに遷移
 - 「自分の回答を編集」ボタン
   - 回答済みの場合のみヘッダー部分に表示
   - クリック時に回答ページ（共有URL）に遷移
