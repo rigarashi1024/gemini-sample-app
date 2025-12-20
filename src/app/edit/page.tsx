@@ -17,6 +17,7 @@ function EditPageContent() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [deadline, setDeadline] = useState('');
   const [loading, setLoading] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
 
@@ -89,7 +90,7 @@ function EditPageContent() {
           title,
           description,
           questions,
-          deadline: null,
+          deadline: deadline ? new Date(deadline).toISOString() : null,
           createdBy: clientId,
         }),
       });
@@ -230,6 +231,26 @@ function EditPageContent() {
             </Card>
           ))}
         </div>
+
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg">アンケート締切日（任意）</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Label htmlFor="deadline">締切日時</Label>
+              <Input
+                id="deadline"
+                type="datetime-local"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+              />
+              <p className="text-sm text-slate-500">
+                締切日を設定しない場合は空欄のままにしてください
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="flex gap-4">
           <Button
