@@ -113,9 +113,21 @@ export default function SharePage() {
     if (!purpose) return;
 
     // 必須質問のチェック
-    const missingRequired = purpose.questions.filter(
-      (q) => q.required && !answers[q.id]
-    );
+    const missingRequired = purpose.questions.filter((q) => {
+      if (!q.required) return false;
+      const answer = answers[q.id];
+
+      // Check for null or undefined
+      if (answer === null || answer === undefined) return true;
+
+      // Check for empty string for text-based answers
+      if (typeof answer === 'string' && answer.trim() === '') return true;
+
+      // Check for empty array for multi-select or similar array-based answers
+      if (Array.isArray(answer) && answer.length === 0) return true;
+
+      return false;
+    });
 
     if (missingRequired.length > 0) {
       alert('必須項目に回答してください');
