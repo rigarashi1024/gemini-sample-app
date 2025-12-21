@@ -30,9 +30,11 @@ import { CSS } from '@dnd-kit/utilities';
 
 // ソート可能な選択肢アイテムコンポーネント
 function SortableOptionItem({
+  id,
   option,
   onRemove,
 }: {
+  id: string;
   option: string;
   onRemove: () => void;
 }) {
@@ -43,7 +45,7 @@ function SortableOptionItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: option });
+  } = useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -110,8 +112,8 @@ function SortableQuestionCard({
     const { active, over } = event;
 
     if (over && active.id !== over.id && question.options) {
-      const oldIndex = question.options.indexOf(active.id as string);
-      const newIndex = question.options.indexOf(over.id as string);
+      const oldIndex = parseInt((active.id as string).split('-').pop() || '0');
+      const newIndex = parseInt((over.id as string).split('-').pop() || '0');
       reorderOptions(index, oldIndex, newIndex);
     }
   };
@@ -184,13 +186,14 @@ function SortableQuestionCard({
                     onDragEnd={handleOptionDragEnd}
                   >
                     <SortableContext
-                      items={question.options || []}
+                      items={question.options?.map((_, i) => `option-${index}-${i}`) || []}
                       strategy={verticalListSortingStrategy}
                     >
                       <div className="space-y-1">
-                        {question.options?.map((option) => (
+                        {question.options?.map((option, optionIndex) => (
                           <SortableOptionItem
-                            key={option}
+                            key={`option-${index}-${optionIndex}`}
+                            id={`option-${index}-${optionIndex}`}
                             option={option}
                             onRemove={() => removeOption(index, option)}
                           />
