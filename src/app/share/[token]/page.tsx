@@ -116,10 +116,16 @@ export default function SharePage() {
     const missingRequired = purpose.questions.filter((q) => {
       if (!q.required) return false;
       const answer = answers[q.id];
-      // null, undefined, 空文字列はすべて未回答とみなす
-      if (answer === null || answer === undefined || answer === '') return true;
-      // 配列の場合は空配列を未回答とみなす
+
+      // Check for null or undefined
+      if (answer === null || answer === undefined) return true;
+
+      // Check for empty string for text-based answers
+      if (typeof answer === 'string' && answer.trim() === '') return true;
+
+      // Check for empty array for multi-select or similar array-based answers
       if (Array.isArray(answer) && answer.length === 0) return true;
+
       return false;
     });
 
