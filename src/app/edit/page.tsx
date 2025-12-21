@@ -28,11 +28,21 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
+// 選択肢IDからインデックスを抽出するヘルパー関数
+// ID形式: option-{questionIndex}-{optionIndex}
+function parseOptionIndex(id: string): number {
+  const parts = id.split('-');
+  const index = parseInt(parts[parts.length - 1] || '0');
+  return isNaN(index) ? 0 : index;
+}
+
 // ソート可能な選択肢アイテムコンポーネント
 function SortableOptionItem({
+  id,
   option,
   onRemove,
 }: {
+  id: string;
   option: string;
   onRemove: () => void;
 }) {
@@ -43,7 +53,7 @@ function SortableOptionItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: option });
+  } = useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -110,8 +120,8 @@ function SortableQuestionCard({
     const { active, over } = event;
 
     if (over && active.id !== over.id && question.options) {
-      const oldIndex = question.options.indexOf(active.id as string);
-      const newIndex = question.options.indexOf(over.id as string);
+      const oldIndex = parseOptionIndex(active.id as string);
+      const newIndex = parseOptionIndex(over.id as string);
       reorderOptions(index, oldIndex, newIndex);
     }
   };
@@ -184,13 +194,14 @@ function SortableQuestionCard({
                     onDragEnd={handleOptionDragEnd}
                   >
                     <SortableContext
-                      items={question.options || []}
+                      items={question.options?.map((_, i) => `option-${index}-${i}`) || []}
                       strategy={verticalListSortingStrategy}
                     >
                       <div className="space-y-1">
-                        {question.options?.map((option) => (
+                        {question.options?.map((option, optionIndex) => (
                           <SortableOptionItem
-                            key={option}
+                            key={`option-${index}-${optionIndex}`}
+                            id={`option-${index}-${optionIndex}`}
                             option={option}
                             onRemove={() => removeOption(index, option)}
                           />
