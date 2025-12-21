@@ -28,21 +28,13 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-// ソート可能な質問カードコンポーネント
-function SortableQuestionCard({
-  question,
-  index,
-  updateQuestion,
-  deleteQuestion,
-  addOption,
-  removeOption,
+// ソート可能な選択肢アイテムコンポーネント
+function SortableOptionItem({
+  option,
+  onRemove,
 }: {
-  question: Question;
-  index: number;
-  updateQuestion: (index: number, field: keyof Question, value: any) => void;
-  deleteQuestion: (index: number) => void;
-  addOption: (questionIndex: number, newOption: string) => void;
-  removeOption: (questionIndex: number, optionToRemove: string) => void;
+  option: string;
+  onRemove: () => void;
 }) {
   const {
     attributes,
@@ -51,7 +43,7 @@ function SortableQuestionCard({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: question.id });
+  } = useSortable({ id: option });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -60,23 +52,80 @@ function SortableQuestionCard({
   };
 
   return (
-    <Card ref={setNodeRef} style={style}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-2 group"
+    >
+      <button
+        className="cursor-grab active:cursor-grabbing touch-none p-1"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="h-4 w-4 text-slate-400" />
+      </button>
+      <span className="flex-1 text-sm">{option}</span>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded"
+        title="選択肢を削除"
+      >
+        <X className="h-3 w-3 text-red-500" />
+      </button>
+    </div>
+  );
+}
+
+// ソート可能な質問カードコンポーネント
+function SortableQuestionCard({
+  question,
+  index,
+  updateQuestion,
+  deleteQuestion,
+  addOption,
+  removeOption,
+  reorderOptions,
+}: {
+  question: Question;
+  index: number;
+  updateQuestion: (index: number, field: keyof Question, value: any) => void;
+  deleteQuestion: (index: number) => void;
+  addOption: (questionIndex: number, newOption: string) => void;
+  removeOption: (questionIndex: number, optionToRemove: string) => void;
+  reorderOptions: (questionIndex: number, oldIndex: number, newIndex: number) => void;
+}) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleOptionDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id && question.options) {
+      const oldIndex = question.options.indexOf(active.id as string);
+      const newIndex = question.options.indexOf(over.id as string);
+      reorderOptions(index, oldIndex, newIndex);
+    }
+  };
+
+  return (
+    <Card>
       <CardHeader>
         <div className="flex items-start justify-between">
-          <div className="flex items-start gap-2 flex-1">
-            <button
-              className="mt-2 cursor-grab active:cursor-grabbing touch-none"
-              {...attributes}
-              {...listeners}
-            >
-              <GripVertical className="h-5 w-5 text-slate-400" />
-            </button>
-            <div className="flex-1 space-y-3">
-              <div>
-                <Label htmlFor={`question-${index}`}>
-                  質問 {index + 1}
-                </Label>
-                <Input
+          <div className="flex-1 space-y-3">
+            <div>
+              <Label htmlFor={`question-${index}`}>
+                質問 {index + 1}
+              </Label>
+              <Input
                   id={`question-${index}`}
                   value={question.label}
                   onChange={(e) =>
@@ -129,21 +178,26 @@ function SortableQuestionCard({
                 question.type === 'tags') && (
                 <div className="space-y-2">
                   <Label>選択肢</Label>
-                  <div className="space-y-1">
-                    {question.options?.map((option, optIndex) => (
-                      <div key={optIndex} className="flex items-center gap-2 group">
-                        <span className="flex-1 text-sm">{option}</span>
-                        <button
-                          type="button"
-                          onClick={() => removeOption(index, option)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded"
-                          title="選択肢を削除"
-                        >
-                          <X className="h-3 w-3 text-red-500" />
-                        </button>
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleOptionDragEnd}
+                  >
+                    <SortableContext
+                      items={question.options || []}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div className="space-y-1">
+                        {question.options?.map((option) => (
+                          <SortableOptionItem
+                            key={option}
+                            option={option}
+                            onRemove={() => removeOption(index, option)}
+                          />
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </SortableContext>
+                  </DndContext>
                   <div className="flex gap-2 pt-2">
                     <Input
                       type="text"
@@ -175,7 +229,6 @@ function SortableQuestionCard({
                 </div>
               )}
             </div>
-          </div>
           <Button
             variant="ghost"
             size="sm"
@@ -199,17 +252,6 @@ function EditPageContent() {
   const [deadline, setDeadline] = useState('');
   const [loading, setLoading] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
 
   useEffect(() => {
     const titleParam = searchParams.get('title');
@@ -299,16 +341,15 @@ function EditPageContent() {
     }
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (over && active.id !== over.id) {
-      setQuestions((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
-      });
-    }
+  const reorderOptions = (questionIndex: number, oldIndex: number, newIndex: number) => {
+    const newQuestions = [...questions];
+    const currentOptions = newQuestions[questionIndex].options || [];
+    const reorderedOptions = arrayMove(currentOptions, oldIndex, newIndex);
+    newQuestions[questionIndex] = {
+      ...newQuestions[questionIndex],
+      options: reorderedOptions
+    };
+    setQuestions(newQuestions);
   };
 
   const updateQuestion = (index: number, field: keyof Question, value: any) => {
@@ -392,30 +433,20 @@ function EditPageContent() {
           </CardContent>
         </Card>
 
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={questions.map((q) => q.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            <div className="space-y-4 mb-6">
-              {questions.map((question, index) => (
-                <SortableQuestionCard
-                  key={question.id}
-                  question={question}
-                  index={index}
-                  updateQuestion={updateQuestion}
-                  deleteQuestion={deleteQuestion}
-                  addOption={addOption}
-                  removeOption={removeOption}
-                />
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
+        <div className="space-y-4 mb-6">
+          {questions.map((question, index) => (
+            <SortableQuestionCard
+              key={question.id}
+              question={question}
+              index={index}
+              updateQuestion={updateQuestion}
+              deleteQuestion={deleteQuestion}
+              addOption={addOption}
+              removeOption={removeOption}
+              reorderOptions={reorderOptions}
+            />
+          ))}
+        </div>
 
         <Card className="mb-6">
           <CardHeader>
