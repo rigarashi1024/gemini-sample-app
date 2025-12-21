@@ -59,6 +59,12 @@ function SortableQuestionCard({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  console.log(`Question ${index + 1}:`, {
+    id: question.id,
+    isDragging,
+    transform: transform ? `x:${transform.x}, y:${transform.y}` : 'null',
+  });
+
   return (
     <Card ref={setNodeRef} style={style}>
       <CardHeader>
@@ -68,6 +74,7 @@ function SortableQuestionCard({
               className="mt-2 cursor-grab active:cursor-grabbing touch-none"
               {...attributes}
               {...listeners}
+              onClick={() => console.log('Drag handle clicked for:', question.id)}
             >
               <GripVertical className="h-5 w-5 text-slate-400" />
             </button>
@@ -302,12 +309,23 @@ function EditPageContent() {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
+    console.log('=== handleDragEnd ===');
+    console.log('active.id:', active.id);
+    console.log('over?.id:', over?.id);
+    console.log('questions:', questions.map(q => ({ id: q.id, label: q.label })));
+
     if (over && active.id !== over.id) {
+      console.log('Reordering questions...');
       setQuestions((items) => {
         const oldIndex = items.findIndex((item) => item.id === active.id);
         const newIndex = items.findIndex((item) => item.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
+        console.log('oldIndex:', oldIndex, 'newIndex:', newIndex);
+        const newItems = arrayMove(items, oldIndex, newIndex);
+        console.log('New order:', newItems.map(q => q.id));
+        return newItems;
       });
+    } else {
+      console.log('No reordering needed');
     }
   };
 
@@ -395,7 +413,14 @@ function EditPageContent() {
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
+          onDragStart={(event) => {
+            console.log('=== onDragStart ===');
+            console.log('Dragging:', event.active.id);
+          }}
           onDragEnd={handleDragEnd}
+          onDragCancel={() => {
+            console.log('=== onDragCancel ===');
+          }}
         >
           <SortableContext
             items={questions.map((q) => q.id)}
