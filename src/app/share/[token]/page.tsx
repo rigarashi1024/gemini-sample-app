@@ -113,9 +113,15 @@ export default function SharePage() {
     if (!purpose) return;
 
     // 必須質問のチェック
-    const missingRequired = purpose.questions.filter(
-      (q) => q.required && !answers[q.id]
-    );
+    const missingRequired = purpose.questions.filter((q) => {
+      if (!q.required) return false;
+      const answer = answers[q.id];
+      // null, undefined, 空文字列はすべて未回答とみなす
+      if (answer === null || answer === undefined || answer === '') return true;
+      // 配列の場合は空配列を未回答とみなす
+      if (Array.isArray(answer) && answer.length === 0) return true;
+      return false;
+    });
 
     if (missingRequired.length > 0) {
       alert('必須項目に回答してください');
