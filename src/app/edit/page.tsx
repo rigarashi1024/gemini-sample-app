@@ -253,17 +253,6 @@ function EditPageContent() {
   const [loading, setLoading] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
   useEffect(() => {
     const titleParam = searchParams.get('title');
     const descriptionParam = searchParams.get('description');
