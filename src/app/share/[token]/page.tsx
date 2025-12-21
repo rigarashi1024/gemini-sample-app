@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Send, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Send, AlertCircle, ArrowLeft, Plus, X } from 'lucide-react';
 import { Question, Answer, AnswerValue } from '@/types/survey';
 import { getOrCreateClientId, hasAnswered, markAsAnswered } from '@/lib/storage';
 
@@ -27,6 +27,8 @@ export default function SharePage() {
   const [purpose, setPurpose] = useState<PurposeData | null>(null);
   const [respondentName, setRespondentName] = useState('');
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
+  const [customOptions, setCustomOptions] = useState<Record<string, string[]>>({});
+  const [newOptionTexts, setNewOptionTexts] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [clientId, setClientId] = useState<string>('');
@@ -109,6 +111,27 @@ export default function SharePage() {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
 
+  const getQuestionOptions = (question: Question): string[] => {
+    return customOptions[question.id] || question.options || [];
+  };
+
+  const addCustomOption = (questionId: string, newOption: string) => {
+    if (!newOption.trim()) return;
+
+    setCustomOptions((prev) => {
+      const current = prev[questionId] || purpose?.questions.find(q => q.id === questionId)?.options || [];
+      if (current.includes(newOption.trim())) return prev;
+      return { ...prev, [questionId]: [...current, newOption.trim()] };
+    });
+  };
+
+  const removeCustomOption = (questionId: string, optionToRemove: string) => {
+    setCustomOptions((prev) => {
+      const current = prev[questionId] || purpose?.questions.find(q => q.id === questionId)?.options || [];
+      return { ...prev, [questionId]: current.filter(opt => opt !== optionToRemove) };
+    });
+  };
+
   const handleSubmit = async () => {
     if (!purpose) return;
 
@@ -162,50 +185,135 @@ export default function SharePage() {
   };
 
   const renderQuestionInput = (question: Question) => {
+    const newOptionText = newOptionTexts[question.id] || '';
+    const setNewOptionText = (text: string) => {
+      setNewOptionTexts(prev => ({ ...prev, [question.id]: text }));
+    };
+
     switch (question.type) {
       case 'single_choice':
+        const singleOptions = getQuestionOptions(question);
         return (
-          <div className="space-y-2">
-            {question.options?.map((option) => (
-              <label key={option} className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name={question.id}
-                  value={option}
-                  checked={answers[question.id] === option}
-                  onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                  className="h-4 w-4"
-                />
-                <span>{option}</span>
-              </label>
-            ))}
+          <div className="space-y-3">
+            <div className="space-y-2">
+              {singleOptions.map((option) => (
+                <div key={option} className="flex items-center space-x-2 group">
+                  <label className="flex items-center space-x-2 cursor-pointer flex-1">
+                    <input
+                      type="radio"
+                      name={question.id}
+                      value={option}
+                      checked={answers[question.id] === option}
+                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                      className="h-4 w-4"
+                    />
+                    <span>{option}</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => removeCustomOption(question.id, option)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded"
+                    title="選択肢を削除"
+                  >
+                    <X className="h-4 w-4 text-red-500" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2 pt-2 border-t">
+              <Input
+                type="text"
+                placeholder="新しい選択肢を追加"
+                value={newOptionText}
+                onChange={(e) => setNewOptionText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addCustomOption(question.id, newOptionText);
+                    setNewOptionText('');
+                  }
+                }}
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  addCustomOption(question.id, newOptionText);
+                  setNewOptionText('');
+                }}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         );
 
       case 'multi_choice':
+        const multiOptions = getQuestionOptions(question);
         return (
-          <div className="space-y-2">
-            {question.options?.map((option) => (
-              <label key={option} className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  value={option}
-                  checked={
-                    Array.isArray(answers[question.id]) &&
-                    (answers[question.id] as string[]).includes(option)
+          <div className="space-y-3">
+            <div className="space-y-2">
+              {multiOptions.map((option) => (
+                <div key={option} className="flex items-center space-x-2 group">
+                  <label className="flex items-center space-x-2 cursor-pointer flex-1">
+                    <input
+                      type="checkbox"
+                      value={option}
+                      checked={
+                        Array.isArray(answers[question.id]) &&
+                        (answers[question.id] as string[]).includes(option)
+                      }
+                      onChange={(e) => {
+                        const current = (answers[question.id] as string[]) || [];
+                        const newValue = e.target.checked
+                          ? [...current, option]
+                          : current.filter((v) => v !== option);
+                        handleAnswerChange(question.id, newValue);
+                      }}
+                      className="h-4 w-4"
+                    />
+                    <span>{option}</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => removeCustomOption(question.id, option)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded"
+                    title="選択肢を削除"
+                  >
+                    <X className="h-4 w-4 text-red-500" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2 pt-2 border-t">
+              <Input
+                type="text"
+                placeholder="新しい選択肢を追加"
+                value={newOptionText}
+                onChange={(e) => setNewOptionText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addCustomOption(question.id, newOptionText);
+                    setNewOptionText('');
                   }
-                  onChange={(e) => {
-                    const current = (answers[question.id] as string[]) || [];
-                    const newValue = e.target.checked
-                      ? [...current, option]
-                      : current.filter((v) => v !== option);
-                    handleAnswerChange(question.id, newValue);
-                  }}
-                  className="h-4 w-4"
-                />
-                <span>{option}</span>
-              </label>
-            ))}
+                }}
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  addCustomOption(question.id, newOptionText);
+                  setNewOptionText('');
+                }}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         );
 
