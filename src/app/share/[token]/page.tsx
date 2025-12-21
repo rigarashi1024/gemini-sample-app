@@ -112,14 +112,21 @@ export default function SharePage() {
   };
 
   const getQuestionOptions = (question: Question): string[] => {
-    return customOptions[question.id] || question.options || [];
+    if (customOptions[question.id] !== undefined) {
+      return customOptions[question.id];
+    }
+    return question.options || [];
   };
 
   const addCustomOption = (questionId: string, newOption: string) => {
     if (!newOption.trim()) return;
 
     setCustomOptions((prev) => {
-      const current = prev[questionId] || purpose?.questions.find(q => q.id === questionId)?.options || [];
+      // customOptionsに未登録の場合は、元のoptionsで初期化
+      const current = prev[questionId] !== undefined
+        ? prev[questionId]
+        : purpose?.questions.find(q => q.id === questionId)?.options || [];
+
       if (current.includes(newOption.trim())) return prev;
       return { ...prev, [questionId]: [...current, newOption.trim()] };
     });
@@ -127,7 +134,11 @@ export default function SharePage() {
 
   const removeCustomOption = (questionId: string, optionToRemove: string) => {
     setCustomOptions((prev) => {
-      const current = prev[questionId] || purpose?.questions.find(q => q.id === questionId)?.options || [];
+      // customOptionsに未登録の場合は、元のoptionsで初期化してから削除
+      const current = prev[questionId] !== undefined
+        ? prev[questionId]
+        : purpose?.questions.find(q => q.id === questionId)?.options || [];
+
       return { ...prev, [questionId]: current.filter(opt => opt !== optionToRemove) };
     });
   };
