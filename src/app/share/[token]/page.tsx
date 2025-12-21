@@ -255,7 +255,11 @@ export default function SharePage() {
           <Input
             type="date"
             value={(answers[question.id] as string) || ''}
-            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              // 空文字列の場合はnullを設定（必須バリデーションで検出できるように）
+              handleAnswerChange(question.id, value === '' ? null : value);
+            }}
           />
         );
 
