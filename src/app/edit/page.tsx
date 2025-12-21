@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Save, RefreshCw, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, RefreshCw, Trash2, Plus, X } from 'lucide-react';
 import Link from 'next/link';
 import { Question } from '@/types/survey';
 import { getOrCreateClientId } from '@/lib/storage';
@@ -119,6 +119,32 @@ function EditPageContent() {
     setQuestions(questions.filter((_, i) => i !== index));
   };
 
+  const addOption = (questionIndex: number, newOption: string) => {
+    if (!newOption.trim()) return;
+
+    const newQuestions = [...questions];
+    const currentOptions = newQuestions[questionIndex].options || [];
+
+    if (currentOptions.includes(newOption.trim())) return;
+
+    newQuestions[questionIndex] = {
+      ...newQuestions[questionIndex],
+      options: [...currentOptions, newOption.trim()]
+    };
+    setQuestions(newQuestions);
+  };
+
+  const removeOption = (questionIndex: number, optionToRemove: string) => {
+    const newQuestions = [...questions];
+    const currentOptions = newQuestions[questionIndex].options || [];
+
+    newQuestions[questionIndex] = {
+      ...newQuestions[questionIndex],
+      options: currentOptions.filter(opt => opt !== optionToRemove)
+    };
+    setQuestions(newQuestions);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 py-12">
       <div className="container mx-auto px-4 max-w-4xl">
@@ -209,12 +235,56 @@ function EditPageContent() {
                         </select>
                       </div>
                     </div>
-                    {question.options && (
-                      <div>
+                    {(question.type === 'single_choice' ||
+                      question.type === 'multi_choice' ||
+                      question.type === 'scale' ||
+                      question.type === 'rating' ||
+                      question.type === 'tags') && (
+                      <div className="space-y-2">
                         <Label>選択肢</Label>
-                        <p className="text-sm text-slate-600">
-                          {question.options.join(', ')}
-                        </p>
+                        <div className="space-y-1">
+                          {question.options?.map((option, optIndex) => (
+                            <div key={optIndex} className="flex items-center gap-2 group">
+                              <span className="flex-1 text-sm">{option}</span>
+                              <button
+                                type="button"
+                                onClick={() => removeOption(index, option)}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded"
+                                title="選択肢を削除"
+                              >
+                                <X className="h-3 w-3 text-red-500" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex gap-2 pt-2">
+                          <Input
+                            type="text"
+                            placeholder="新しい選択肢を追加"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                addOption(index, e.currentTarget.value);
+                                e.currentTarget.value = '';
+                              }
+                            }}
+                            className="flex-1 text-sm"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                              if (input && input.value) {
+                                addOption(index, input.value);
+                                input.value = '';
+                              }
+                            }}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </div>
