@@ -125,11 +125,13 @@ function EditPageContent() {
     const newQuestions = [...questions];
     const currentOptions = newQuestions[questionIndex].options || [];
 
-    if (currentOptions.includes(newOption.trim())) return;
+    // 大文字小文字を区別しない重複チェック
+    const trimmedOption = newOption.trim();
+    if (currentOptions.some(opt => opt.toLowerCase() === trimmedOption.toLowerCase())) return;
 
     newQuestions[questionIndex] = {
       ...newQuestions[questionIndex],
-      options: [...currentOptions, newOption.trim()]
+      options: [...currentOptions, trimmedOption]
     };
     setQuestions(newQuestions);
   };
