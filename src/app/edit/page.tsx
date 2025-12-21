@@ -310,6 +310,15 @@ function EditPageContent() {
   const updateQuestion = (index: number, field: keyof Question, value: any) => {
     const newQuestions = [...questions];
     newQuestions[index] = { ...newQuestions[index], [field]: value };
+
+    // 質問タイプが変更され、新しいタイプがoptionsをサポートしない場合はクリア
+    if (field === 'type') {
+      const optionSupportedTypes = ['single_choice', 'multi_choice', 'scale', 'rating', 'tags'];
+      if (!optionSupportedTypes.includes(value)) {
+        newQuestions[index].options = undefined;
+      }
+    }
+
     setQuestions(newQuestions);
   };
 
