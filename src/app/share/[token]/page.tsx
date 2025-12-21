@@ -261,7 +261,7 @@ export default function SharePage() {
               handleAnswerChange(question.id, value === '' ? null : value);
             }}
             placeholder="日付を選択してください"
-            className="[&::-webkit-datetime-edit-text]:text-muted-foreground [&::-webkit-datetime-edit-month-field]:text-muted-foreground [&::-webkit-datetime-edit-day-field]:text-muted-foreground [&::-webkit-datetime-edit-year-field]:text-muted-foreground"
+            className="[&::-webkit-datetime-edit]:text-foreground [&::-webkit-calendar-picker-indicator]:opacity-100"
           />
         );
 
