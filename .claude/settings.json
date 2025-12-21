@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "fileSystem": {
+      "read": true,
+      "write": true
+    },
+
+    "shell": {
+      "enabled": true,
+      "deny": [
+        "rm",
+        "rm -rf",
+        "sudo",
+        "shutdown",
+        "reboot",
+        "mkfs",
+        "dd"
+      ]
+    },
+
+    "git": {
+      "enabled": true,
+      "deny": [
+        "git push origin main",
+        "git push origin master",
+        "git branch -d main",
+        "git branch -D main",
+        "git branch -d master",
+        "git branch -D master",
+        "git reset --hard",
+        "git clean -fd"
+      ]
+    }
+  }
+}
