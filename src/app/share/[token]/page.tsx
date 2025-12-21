@@ -260,6 +260,7 @@ export default function SharePage() {
               // 空文字列の場合はnullを設定（必須バリデーションで検出できるように）
               handleAnswerChange(question.id, value === '' ? null : value);
             }}
+            placeholder="日付を選択してください"
           />
         );
 
