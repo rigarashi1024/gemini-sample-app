@@ -6,10 +6,189 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Save, RefreshCw, Trash2, Plus, X } from 'lucide-react';
+import { ArrowLeft, Save, RefreshCw, Trash2, Plus, X, GripVertical } from 'lucide-react';
 import Link from 'next/link';
 import { Question } from '@/types/survey';
 import { getOrCreateClientId } from '@/lib/storage';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+// ソート可能な質問カードコンポーネント
+function SortableQuestionCard({
+  question,
+  index,
+  updateQuestion,
+  deleteQuestion,
+  addOption,
+  removeOption,
+}: {
+  question: Question;
+  index: number;
+  updateQuestion: (index: number, field: keyof Question, value: any) => void;
+  deleteQuestion: (index: number) => void;
+  addOption: (questionIndex: number, newOption: string) => void;
+  removeOption: (questionIndex: number, optionToRemove: string) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: question.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <Card ref={setNodeRef} style={style}>
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <div className="flex items-start gap-2 flex-1">
+            <button
+              className="mt-2 cursor-grab active:cursor-grabbing touch-none"
+              {...attributes}
+              {...listeners}
+            >
+              <GripVertical className="h-5 w-5 text-slate-400" />
+            </button>
+            <div className="flex-1 space-y-3">
+              <div>
+                <Label htmlFor={`question-${index}`}>
+                  質問 {index + 1}
+                </Label>
+                <Input
+                  id={`question-${index}`}
+                  value={question.label}
+                  onChange={(e) =>
+                    updateQuestion(index, 'label', e.target.value)
+                  }
+                  className="mt-1"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>質問形式</Label>
+                  <select
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    value={question.type}
+                    onChange={(e) =>
+                      updateQuestion(index, 'type', e.target.value)
+                    }
+                  >
+                    <option value="single_choice">単一選択</option>
+                    <option value="multi_choice">複数選択</option>
+                    <option value="text">自由記述</option>
+                    <option value="number">数値</option>
+                    <option value="date">日付</option>
+                    <option value="scale">スケール</option>
+                    <option value="rating">評価</option>
+                  </select>
+                </div>
+                <div>
+                  <Label>必須</Label>
+                  <select
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    value={question.required ? 'true' : 'false'}
+                    onChange={(e) =>
+                      updateQuestion(
+                        index,
+                        'required',
+                        e.target.value === 'true'
+                      )
+                    }
+                  >
+                    <option value="true">はい</option>
+                    <option value="false">いいえ</option>
+                  </select>
+                </div>
+              </div>
+              {(question.type === 'single_choice' ||
+                question.type === 'multi_choice' ||
+                question.type === 'scale' ||
+                question.type === 'rating' ||
+                question.type === 'tags') && (
+                <div className="space-y-2">
+                  <Label>選択肢</Label>
+                  <div className="space-y-1">
+                    {question.options?.map((option, optIndex) => (
+                      <div key={optIndex} className="flex items-center gap-2 group">
+                        <span className="flex-1 text-sm">{option}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeOption(index, option)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded"
+                          title="選択肢を削除"
+                        >
+                          <X className="h-3 w-3 text-red-500" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <Input
+                      type="text"
+                      placeholder="新しい選択肢を追加"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addOption(index, e.currentTarget.value);
+                          e.currentTarget.value = '';
+                        }
+                      }}
+                      className="flex-1 text-sm"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                        if (input && input.value) {
+                          addOption(index, input.value);
+                          input.value = '';
+                        }
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => deleteQuestion(index)}
+            className="ml-2"
+          >
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        </div>
+      </CardHeader>
+    </Card>
+  );
+}
 
 function EditPageContent() {
   const router = useRouter();
@@ -20,6 +199,13 @@ function EditPageContent() {
   const [deadline, setDeadline] = useState('');
   const [loading, setLoading] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     const titleParam = searchParams.get('title');
@@ -109,9 +295,30 @@ function EditPageContent() {
     }
   };
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setQuestions((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
   const updateQuestion = (index: number, field: keyof Question, value: any) => {
     const newQuestions = [...questions];
     newQuestions[index] = { ...newQuestions[index], [field]: value };
+
+    // 質問タイプが変更され、新しいタイプがoptionsをサポートしない場合はクリア
+    if (field === 'type') {
+      const optionSupportedTypes = ['single_choice', 'multi_choice', 'scale', 'rating', 'tags'];
+      if (!optionSupportedTypes.includes(value)) {
+        newQuestions[index].options = undefined;
+      }
+    }
+
     setQuestions(newQuestions);
   };
 
@@ -181,128 +388,30 @@ function EditPageContent() {
           </CardContent>
         </Card>
 
-        <div className="space-y-4 mb-6">
-          {questions.map((question, index) => (
-            <Card key={question.id}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 space-y-3">
-                    <div>
-                      <Label htmlFor={`question-${index}`}>
-                        質問 {index + 1}
-                      </Label>
-                      <Input
-                        id={`question-${index}`}
-                        value={question.label}
-                        onChange={(e) =>
-                          updateQuestion(index, 'label', e.target.value)
-                        }
-                        className="mt-1"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label>質問形式</Label>
-                        <select
-                          className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                          value={question.type}
-                          onChange={(e) =>
-                            updateQuestion(index, 'type', e.target.value)
-                          }
-                        >
-                          <option value="single_choice">単一選択</option>
-                          <option value="multi_choice">複数選択</option>
-                          <option value="text">自由記述</option>
-                          <option value="number">数値</option>
-                          <option value="date">日付</option>
-                          <option value="scale">スケール</option>
-                          <option value="rating">評価</option>
-                        </select>
-                      </div>
-                      <div>
-                        <Label>必須</Label>
-                        <select
-                          className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                          value={question.required ? 'true' : 'false'}
-                          onChange={(e) =>
-                            updateQuestion(
-                              index,
-                              'required',
-                              e.target.value === 'true'
-                            )
-                          }
-                        >
-                          <option value="true">はい</option>
-                          <option value="false">いいえ</option>
-                        </select>
-                      </div>
-                    </div>
-                    {(question.type === 'single_choice' ||
-                      question.type === 'multi_choice' ||
-                      question.type === 'scale' ||
-                      question.type === 'rating' ||
-                      question.type === 'tags') && (
-                      <div className="space-y-2">
-                        <Label>選択肢</Label>
-                        <div className="space-y-1">
-                          {question.options?.map((option, optIndex) => (
-                            <div key={optIndex} className="flex items-center gap-2 group">
-                              <span className="flex-1 text-sm">{option}</span>
-                              <button
-                                type="button"
-                                onClick={() => removeOption(index, option)}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded"
-                                title="選択肢を削除"
-                              >
-                                <X className="h-3 w-3 text-red-500" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="flex gap-2 pt-2">
-                          <Input
-                            type="text"
-                            placeholder="新しい選択肢を追加"
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                addOption(index, e.currentTarget.value);
-                                e.currentTarget.value = '';
-                              }
-                            }}
-                            className="flex-1 text-sm"
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              const input = e.currentTarget.previousElementSibling as HTMLInputElement;
-                              if (input && input.value) {
-                                addOption(index, input.value);
-                                input.value = '';
-                              }
-                            }}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => deleteQuestion(index)}
-                    className="ml-2"
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={questions.map((q) => q.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-4 mb-6">
+              {questions.map((question, index) => (
+                <SortableQuestionCard
+                  key={question.id}
+                  question={question}
+                  index={index}
+                  updateQuestion={updateQuestion}
+                  deleteQuestion={deleteQuestion}
+                  addOption={addOption}
+                  removeOption={removeOption}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
 
         <Card className="mb-6">
           <CardHeader>
