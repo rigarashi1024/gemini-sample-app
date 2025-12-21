@@ -28,6 +28,14 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
+// 選択肢IDからインデックスを抽出するヘルパー関数
+// ID形式: option-{questionIndex}-{optionIndex}
+function parseOptionIndex(id: string): number {
+  const parts = id.split('-');
+  const index = parseInt(parts[parts.length - 1] || '0');
+  return isNaN(index) ? 0 : index;
+}
+
 // ソート可能な選択肢アイテムコンポーネント
 function SortableOptionItem({
   id,
@@ -112,8 +120,8 @@ function SortableQuestionCard({
     const { active, over } = event;
 
     if (over && active.id !== over.id && question.options) {
-      const oldIndex = parseInt((active.id as string).split('-').pop() || '0');
-      const newIndex = parseInt((over.id as string).split('-').pop() || '0');
+      const oldIndex = parseOptionIndex(active.id as string);
+      const newIndex = parseOptionIndex(over.id as string);
       reorderOptions(index, oldIndex, newIndex);
     }
   };
