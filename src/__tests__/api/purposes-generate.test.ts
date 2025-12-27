@@ -3,13 +3,34 @@
  * - POST: AIによる質問生成（バリデーション、LLMモック）
  */
 
+jest.mock('../../../src/lib/ai');
+
 import { POST } from '@/app/api/purposes/generate/route';
-import { mockGenerateQuestions, mockQuestionsResponse } from '../utils/mockAI';
+import { generateQuestions } from '@/lib/ai';
 import { createMockNextRequest } from '../utils/testHelpers';
+
+const mockGenerateQuestions = generateQuestions as jest.MockedFunction<typeof generateQuestions>;
+
+const mockQuestionsResponse = [
+  {
+    id: 'q1',
+    label: '好きな食べ物は何ですか？',
+    type: 'single_choice' as const,
+    options: ['寿司', 'ラーメン', 'カレー', 'その他'],
+    required: true,
+  },
+  {
+    id: 'q2',
+    label: '予算はいくらですか？',
+    type: 'single_choice' as const,
+    options: ['1000円以下', '1000-2000円', '2000-3000円', '3000円以上'],
+    required: true,
+  },
+];
 
 describe('/api/purposes/generate', () => {
   beforeEach(() => {
-    mockGenerateQuestions.mockReset();
+    jest.clearAllMocks();
   });
 
   it('正常に質問を生成できる', async () => {

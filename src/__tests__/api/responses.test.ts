@@ -1,12 +1,22 @@
 /**
- * /api/responses のテスト  
+ * /api/responses のテスト
  * - GET: 既存回答取得（clientId+purposeIdでの検索）
  * - POST: 回答作成/更新（Upsert動作、重複抑止）
  */
 
+import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
+import { PrismaClient } from '@prisma/client';
+
+jest.mock('../../../src/lib/prisma', () => ({
+  __esModule: true,
+  prisma: mockDeep<PrismaClient>(),
+}));
+
 import { GET, POST } from '@/app/api/responses/route';
-import { prismaMock } from '../utils/mockPrisma';
+import { prisma } from '@/lib/prisma';
 import { createMockNextRequest, testData } from '../utils/testHelpers';
+
+const prismaMock = prisma as DeepMockProxy<PrismaClient>;
 
 describe('/api/responses', () => {
   describe('GET', () => {

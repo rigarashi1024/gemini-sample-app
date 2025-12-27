@@ -4,11 +4,19 @@
  * - POST: Purpose作成（バリデーション、shareToken生成、deadline処理）
  */
 
+import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
+import { PrismaClient } from '@prisma/client';
+
+jest.mock('../../../src/lib/prisma', () => ({
+  __esModule: true,
+  prisma: mockDeep<PrismaClient>(),
+}));
+
 import { GET, POST } from '@/app/api/purposes/route';
 import { prisma } from '@/lib/prisma';
 import { createMockNextRequest, testData } from '../utils/testHelpers';
 
-const prismaMock = prisma as jest.Mocked<typeof prisma>;
+const prismaMock = prisma as DeepMockProxy<PrismaClient>;
 
 describe('/api/purposes', () => {
   describe('GET', () => {

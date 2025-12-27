@@ -38,8 +38,8 @@ export const testData = {
     shareToken: 'test-token-123',
     deadline: null,
     createdBy: 'client-123',
-    createdAt: new Date('2025-01-01'),
-    updatedAt: new Date('2025-01-01'),
+    createdAt: '2025-01-01T00:00:00.000Z',
+    updatedAt: '2025-01-01T00:00:00.000Z',
   },
 
   response: {
@@ -53,7 +53,7 @@ export const testData = {
         value: '選択肢1',
       },
     ],
-    createdAt: new Date('2025-01-01'),
-    updatedAt: new Date('2025-01-01'),
+    createdAt: '2025-01-01T00:00:00.000Z',
+    updatedAt: '2025-01-01T00:00:00.000Z',
   },
 };
