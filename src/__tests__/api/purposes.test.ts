@@ -28,7 +28,7 @@ describe('/api/purposes', () => {
         },
       ];
 
-      prismaMock.purpose.findMany.mockResolvedValue(purposes as any);
+      prismaMock.purpose.findMany.mockResolvedValue(purposes);
 
       const request = createMockNextRequest('http://localhost:3000/api/purposes');
       const response = await GET(request);
@@ -94,7 +94,7 @@ describe('/api/purposes', () => {
   describe('POST', () => {
     it('正常にPurposeを作成できる', async () => {
       const newPurpose = testData.purpose;
-      prismaMock.purpose.create.mockResolvedValue(newPurpose as any);
+      prismaMock.purpose.create.mockResolvedValue(newPurpose);
 
       const request = createMockNextRequest('http://localhost:3000/api/purposes', {
         method: 'POST',
@@ -211,7 +211,7 @@ describe('/api/purposes', () => {
 
     it('deadlineが文字列の場合はDateに変換される', async () => {
       const deadlineStr = '2025-12-31T23:59:59Z';
-      prismaMock.purpose.create.mockResolvedValue(testData.purpose as any);
+      prismaMock.purpose.create.mockResolvedValue(testData.purpose);
 
       const request = createMockNextRequest('http://localhost:3000/api/purposes', {
         method: 'POST',

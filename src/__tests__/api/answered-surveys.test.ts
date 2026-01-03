@@ -48,7 +48,7 @@ describe('/api/answered-surveys', () => {
           },
         },
       ];
-      prismaMock.response.findMany.mockResolvedValue(responses as any);
+      prismaMock.response.findMany.mockResolvedValue(responses);
 
       const request = createMockNextRequest(
         'http://localhost:3000/api/answered-surveys?clientId=client-123'
@@ -92,7 +92,7 @@ describe('/api/answered-surveys', () => {
           },
         },
       ];
-      prismaMock.response.findMany.mockResolvedValue(responses as any);
+      prismaMock.response.findMany.mockResolvedValue(responses);
 
       const request = createMockNextRequest(
         'http://localhost:3000/api/answered-surveys?clientId=client-123'

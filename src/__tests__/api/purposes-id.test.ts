@@ -26,7 +26,7 @@ describe('/api/purposes/[id]', () => {
         ...testData.purpose,
         responses: [testData.response],
       };
-      prismaMock.purpose.findUnique.mockResolvedValue(purposeWithResponses as any);
+      prismaMock.purpose.findUnique.mockResolvedValue(purposeWithResponses);
 
       const request = createMockNextRequest('http://localhost:3000/api/purposes/purpose-123');
       const response = await GET(request, { params: { id: 'purpose-123' } });
@@ -70,7 +70,7 @@ describe('/api/purposes/[id]', () => {
         title: '更新されたタイトル',
         description: '更新された説明',
       };
-      prismaMock.purpose.update.mockResolvedValue(updatedPurpose as any);
+      prismaMock.purpose.update.mockResolvedValue(updatedPurpose);
 
       const request = createMockNextRequest('http://localhost:3000/api/purposes/purpose-123', {
         method: 'PUT',
@@ -111,7 +111,7 @@ describe('/api/purposes/[id]', () => {
 
   describe('DELETE', () => {
     it('正常にPurposeを削除できる', async () => {
-      prismaMock.purpose.delete.mockResolvedValue(testData.purpose as any);
+      prismaMock.purpose.delete.mockResolvedValue(testData.purpose);
 
       const request = createMockNextRequest('http://localhost:3000/api/purposes/purpose-123', {
         method: 'DELETE',

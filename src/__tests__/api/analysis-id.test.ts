@@ -51,7 +51,7 @@ describe('/api/analysis/[id]', () => {
           },
         ],
       };
-      prismaMock.purpose.findUnique.mockResolvedValue(purposeWithResponses as any);
+      prismaMock.purpose.findUnique.mockResolvedValue(purposeWithResponses);
       mockGenerateSummary.mockResolvedValue('AI要約: テスト結果の要約です');
 
       const request = createMockNextRequest('http://localhost:3000/api/analysis/purpose-123');
@@ -72,7 +72,7 @@ describe('/api/analysis/[id]', () => {
         ...testData.purpose,
         responses: [],
       };
-      prismaMock.purpose.findUnique.mockResolvedValue(purposeWithoutResponses as any);
+      prismaMock.purpose.findUnique.mockResolvedValue(purposeWithoutResponses);
 
       const request = createMockNextRequest('http://localhost:3000/api/analysis/purpose-123');
       const response = await GET(request, { params: { id: 'purpose-123' } });

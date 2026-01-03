@@ -21,7 +21,7 @@ const prismaMock = prisma as DeepMockProxy<PrismaClient>;
 describe('/api/responses', () => {
   describe('GET', () => {
     it('既存の回答を取得できる', async () => {
-      prismaMock.response.findUnique.mockResolvedValue(testData.response as any);
+      prismaMock.response.findUnique.mockResolvedValue(testData.response);
 
       const request = createMockNextRequest(
         'http://localhost:3000/api/responses?purposeId=purpose-123&clientId=client-123'
@@ -72,7 +72,7 @@ describe('/api/responses', () => {
   describe('POST', () => {
     it('新規回答を作成できる', async () => {
       prismaMock.response.findUnique.mockResolvedValue(null);
-      prismaMock.response.create.mockResolvedValue(testData.response as any);
+      prismaMock.response.create.mockResolvedValue(testData.response);
 
       const request = createMockNextRequest('http://localhost:3000/api/responses', {
         method: 'POST',
@@ -94,8 +94,8 @@ describe('/api/responses', () => {
 
     it('既存回答がある場合は更新する（Upsert）', async () => {
       const existingResponse = { ...testData.response, id: 'existing-123' };
-      prismaMock.response.findUnique.mockResolvedValue(existingResponse as any);
-      prismaMock.response.update.mockResolvedValue(existingResponse as any);
+      prismaMock.response.findUnique.mockResolvedValue(existingResponse);
+      prismaMock.response.update.mockResolvedValue(existingResponse);
 
       const request = createMockNextRequest('http://localhost:3000/api/responses', {
         method: 'POST',
