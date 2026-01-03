@@ -67,7 +67,7 @@ describe('/api/purposes/generate', () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain('Title and description are required');
+    expect(data.error).toBe('Title is required');
   });
 
   it('descriptionが欠けている場合は400エラーを返す', async () => {
@@ -82,7 +82,7 @@ describe('/api/purposes/generate', () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain('Title and description are required');
+    expect(data.error).toBe('Description is required');
   });
 
   it('AI生成エラー時に500エラーを返す', async () => {

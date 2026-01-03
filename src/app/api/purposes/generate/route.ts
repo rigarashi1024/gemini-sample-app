@@ -8,9 +8,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { title, description } = body as PurposeInput;
 
-    if (!title || !description) {
+    if (!title) {
       return NextResponse.json(
-        { error: 'Title and description are required' },
+        { error: 'Title is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!description) {
+      return NextResponse.json(
+        { error: 'Description is required' },
         { status: 400 }
       );
     }

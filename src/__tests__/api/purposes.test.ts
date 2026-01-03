@@ -209,6 +209,24 @@ describe('/api/purposes', () => {
       expect(data.error).toContain('Questions must be a non-empty array');
     });
 
+    it('questionsが配列でない場合は400エラーを返す', async () => {
+      const request = createMockNextRequest('http://localhost:3000/api/purposes', {
+        method: 'POST',
+        body: {
+          title: 'test',
+          description: 'test',
+          questions: 'not an array',
+          createdBy: 'client-123',
+        },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toContain('Questions must be a non-empty array');
+    });
+
     it('deadlineが文字列の場合はDateに変換される', async () => {
       const deadlineStr = '2025-12-31T23:59:59Z';
       prismaMock.purpose.create.mockResolvedValue(testData.purpose);
